@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Post {
+    id        Int      @id @default(autoincrement())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
+}
+
+model Movie {
+    id                    Int
+    groupId               String
+    displayName           String
+    link                  String
+    imageUrl              String
+    address               String
+    bookingUrl            String
+    blockOnlineSales      Boolean   @default(false)
+    blockOnlineSalesUntil DateTime?
+    latitude              Float
+    longitude             Float
+
+    @@unique([id])
+}
