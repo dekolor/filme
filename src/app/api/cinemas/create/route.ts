@@ -6,8 +6,8 @@ export async function POST(req: Request) {
   const ctx = await createTRPCContext({ headers: req.headers });
   const caller = createCaller(ctx);
   try {
-    const movies = await req.json();
-    await caller.movie.create(movies);
+    const cinemas = await req.json();
+    await caller.cinema.create(cinemas);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error(error);

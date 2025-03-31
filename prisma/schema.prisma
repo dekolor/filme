@@ -19,7 +19,7 @@ model Post {
     @@index([name])
 }
 
-model Movie {
+model Cinema {
     id                    Int
     groupId               String
     displayName           String

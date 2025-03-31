@@ -6,10 +6,10 @@ import { Input } from "~/components/ui/input";
 
 import CitySelector from "~/app/_components/city-selector";
 import FeaturedMovies from "~/app/_components/featured-movies";
-
 import { HydrateClient } from "~/trpc/server";
+import FeaturedCinemas from "./_components/featured-cinemas";
 
-export default async function Home() {
+export default function Home() {
   return (
     <HydrateClient>
       <div className="bg-background min-h-screen">
@@ -47,7 +47,7 @@ export default async function Home() {
           <section className="mb-12">
             <div className="relative mb-6 h-[300px] overflow-hidden rounded-xl md:h-[400px]">
               <Image
-                src="/placeholder.svg?height=400&width=1200"
+                src="https://picsum.photos/1200/400"
                 alt="Now showing: Dune Part Two"
                 fill
                 className="object-cover"
@@ -71,37 +71,7 @@ export default async function Home() {
 
           <FeaturedMovies />
 
-          <section className="my-12">
-            <h2 className="mb-6 text-2xl font-bold">Popular Cinemas</h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {["Cineplex Downtown", "AMC Metropolis", "Regal City Center"].map(
-                (cinema) => (
-                  <Link
-                    key={cinema}
-                    href={`/cinemas/${cinema.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="group block"
-                  >
-                    <div className="bg-card overflow-hidden rounded-lg shadow-md transition-all group-hover:shadow-lg">
-                      <div className="relative h-40">
-                        <Image
-                          src={`/placeholder.svg?height=200&width=400&text=${encodeURIComponent(cinema)}`}
-                          alt={cinema}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-lg font-semibold">{cinema}</h3>
-                        <p className="text-muted-foreground text-sm">
-                          Multiple screens • Concessions • Parking available
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ),
-              )}
-            </div>
-          </section>
+          <FeaturedCinemas />
         </main>
 
         <footer className="bg-muted py-8">

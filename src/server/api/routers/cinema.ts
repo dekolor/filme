@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-export const movieRouter = createTRPCRouter({
+export const cinemaRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.array(
@@ -21,7 +21,7 @@ export const movieRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.movie.createMany({
+      return ctx.db.cinema.createMany({
         data: input,
         skipDuplicates: true,
       });
@@ -30,8 +30,16 @@ export const movieRouter = createTRPCRouter({
   getAll: publicProcedure
     .input(z.number().optional())
     .query(async ({ ctx, input }) => {
-      const movies = await ctx.db.movie.findMany({ take: input });
+      const cinemas = await ctx.db.cinema.findMany({ take: input });
 
-      return movies;
+      return cinemas;
     }),
+
+  getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    const cinema = await ctx.db.cinema.findUnique({
+      where: { id: Number(input) },
+    });
+
+    return cinema;
+  }),
 });

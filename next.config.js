@@ -7,7 +7,10 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    remotePatterns: [{ hostname: "*.cinemacity.ro" }],
+    remotePatterns: [
+      { hostname: "*.cinemacity.ro" },
+      { hostname: "picsum.photos" },
+    ],
   },
 };
 
