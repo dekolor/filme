@@ -46,7 +46,7 @@ export default function CitySelector() {
         >
           <div className="flex items-center gap-1 truncate">
             <MapPin className="h-4 w-4 shrink-0 opacity-50" />
-            {cities.find((city) => city.value === value)?.label ||
+            {cities.find((city) => city.value === value)?.label ??
               "Select city"}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

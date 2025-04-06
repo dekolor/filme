@@ -1,11 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
-import { notFound } from "next/navigation";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { MapPin, Phone, Clock, Calendar } from "lucide-react";
-import { api } from "~/trpc/react";
 import Cinema from "~/app/_components/cinema";
 
 export default async function CinemaPage({

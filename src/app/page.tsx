@@ -1,14 +1,11 @@
 import { Search } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-
-import CitySelector from "~/app/_components/city-selector";
 import FeaturedMovies from "~/app/_components/featured-movies";
 import { HydrateClient } from "~/trpc/server";
 import FeaturedCinemas from "./_components/featured-cinemas";
-
+import FeaturedMovie from "./_components/featured-movie";
 export default function Home() {
   return (
     <HydrateClient>
@@ -20,7 +17,7 @@ export default function Home() {
                 MovieTime
               </Link>
               <div className="flex w-full items-center gap-2 md:w-auto">
-                <CitySelector />
+                {/* <CitySelector /> */}
                 <form className="relative flex-1 md:w-80" action="/search">
                   <Input
                     type="search"
@@ -44,30 +41,7 @@ export default function Home() {
         </header>
 
         <main className="container mx-auto px-4 py-8">
-          <section className="mb-12">
-            <div className="relative mb-6 h-[300px] overflow-hidden rounded-xl md:h-[400px]">
-              <Image
-                src="https://picsum.photos/1200/400"
-                alt="Now showing: Dune Part Two"
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent p-6">
-                <h1 className="mb-2 text-3xl font-bold text-white md:text-4xl">
-                  Now Showing: Dune Part Two
-                </h1>
-                <p className="mb-4 max-w-2xl text-white/80">
-                  The saga continues as Paul Atreides unites with the Fremen to
-                  seek revenge against the conspirators who destroyed his
-                  family.
-                </p>
-                <Button asChild>
-                  <Link href="/movies/dune-part-two">View Showtimes</Link>
-                </Button>
-              </div>
-            </div>
-          </section>
+          <FeaturedMovie />
 
           <FeaturedMovies />
 

@@ -42,4 +42,19 @@ export const cinemaRouter = createTRPCRouter({
 
     return cinema;
   }),
+
+  getByMovieId: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const cinemas = await ctx.db.cinema.findMany({
+        where: {
+          events: { some: { Movie: { id: input } } },
+        },
+        include: {
+          events: true,
+        },
+      });
+
+      return cinemas;
+    }),
 });

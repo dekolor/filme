@@ -20,7 +20,7 @@ model Post {
 }
 
 model Cinema {
-    id                    Int
+    id                    Int       @id
     groupId               String
     displayName           String
     link                  String
@@ -32,5 +32,37 @@ model Cinema {
     latitude              Float
     longitude             Float
 
-    @@unique([id])
+    events MovieEvent[]
+}
+
+model Movie {
+    id           String   @id
+    name         String
+    length       Int
+    posterLink   String
+    videoLink    String?
+    link         String
+    weight       Int
+    releaseYear  String?
+    releaseDate  String
+    attributeIds String[]
+
+    events MovieEvent[]
+}
+
+model MovieEvent {
+    id                   String   @id
+    filmId               String
+    cinemaId             Int
+    businessDay          String
+    eventDateTime        String
+    attributes           String[]
+    bookingLink          String
+    secondaryBookingLink String?
+    presentationCode     String
+    soldOut              Boolean  @default(false)
+    auditorium           String
+    auditoriumTinyName   String
+    Cinema               Cinema   @relation(fields: [cinemaId], references: [id])
+    Movie                Movie?   @relation(fields: [filmId], references: [id])
 }
