@@ -27,4 +27,13 @@ export const movieEventRouter = createTRPCRouter({
         skipDuplicates: true,
       });
     }),
+
+  getByCinemaIdAndMovieId: publicProcedure
+    .input(z.object({ cinemaId: z.number().optional(), movieId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.movieEvent.findMany({
+        where: { cinemaId: input.cinemaId, filmId: input.movieId },
+        include: { Cinema: true },
+      });
+    }),
 });
