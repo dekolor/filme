@@ -50,9 +50,6 @@ export const cinemaRouter = createTRPCRouter({
         where: {
           events: { some: { Movie: { id: input } } },
         },
-        include: {
-          events: true,
-        },
       });
 
       return cinemas;
