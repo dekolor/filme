@@ -1,19 +1,20 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Star } from "lucide-react";
+import { Calendar, Clock, Star } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 
 import { DateTime } from "luxon";
 import { useState, useEffect } from "react";
 
+import MovieShowtimes from "./movie-showtimes";
+
 export default function Movie({ movieId }: { movieId: string }) {
+  const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null);
   const { data: movie, isLoading } = api.movie.getById.useQuery(movieId);
   const [imgSrc, setImgSrc] = useState("/noposter.png");
+
   const { data: cinemas, isLoading: cinemasLoading } =
     api.cinema.getByMovieId.useQuery(movieId);
 
@@ -22,6 +23,12 @@ export default function Movie({ movieId }: { movieId: string }) {
       setImgSrc(movie.posterLink);
     }
   }, [movie?.posterLink]);
+
+  useEffect(() => {
+    if (!selectedCinemaId) {
+      setSelectedCinemaId(Number(cinemas?.[0]?.id));
+    }
+  }, [selectedCinemaId, cinemas]);
 
   if (isLoading || cinemasLoading) {
     return <div>Loading...</div>;
@@ -100,47 +107,7 @@ export default function Movie({ movieId }: { movieId: string }) {
 
           <h2 className="mb-6 text-2xl font-bold">Showtimes</h2>
 
-          <Tabs defaultValue={cinemas?.[0]?.id.toString()}>
-            <TabsList className="mb-4">
-              {cinemas?.map((cinema) => (
-                <TabsTrigger key={cinema.id} value={cinema.id.toString()}>
-                  {cinema.displayName}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {cinemas!.map((cinema) => (
-              <TabsContent key={cinema.id} value={cinema.id.toString()}>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                      <MapPin className="text-muted-foreground h-5 w-5" />
-                      <h3 className="font-semibold">{cinema.displayName}</h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                      {cinema?.events.map((showtime, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          className="flex h-auto flex-col py-3"
-                        >
-                          <span>
-                            {DateTime.fromISO(
-                              showtime.eventDateTime,
-                            ).toLocaleString(DateTime.DATETIME_SHORT)}
-                          </span>
-                          <span className="text-muted-foreground mt-1 text-xs">
-                            Sala: {showtime.auditoriumTinyName}
-                          </span>
-                        </Button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
+          <MovieShowtimes movieId={movieId} />
         </div>
       </div>
     </main>
