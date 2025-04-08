@@ -1,22 +1,14 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Star } from "lucide-react";
+import { Calendar, Clock, Star } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 
 import { DateTime } from "luxon";
 import { useState, useEffect } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+
+import MovieShowtimes from "./movie-showtimes";
 
 export default function Movie({ movieId }: { movieId: string }) {
   const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null);
@@ -31,6 +23,12 @@ export default function Movie({ movieId }: { movieId: string }) {
       setImgSrc(movie.posterLink);
     }
   }, [movie?.posterLink]);
+
+  useEffect(() => {
+    if (!selectedCinemaId) {
+      setSelectedCinemaId(Number(cinemas?.[0]?.id));
+    }
+  }, [selectedCinemaId, cinemas]);
 
   if (isLoading || cinemasLoading) {
     return <div>Loading...</div>;
@@ -109,21 +107,7 @@ export default function Movie({ movieId }: { movieId: string }) {
 
           <h2 className="mb-6 text-2xl font-bold">Showtimes</h2>
 
-          <Select
-            value={selectedCinemaId?.toString() ?? ""}
-            onValueChange={(value) => setSelectedCinemaId(Number(value))}
-          >
-            <SelectTrigger className="right-0 mb-4 w-[180px]">
-              <SelectValue placeholder="Cinema" />
-            </SelectTrigger>
-            <SelectContent>
-              {cinemas?.map((cinema) => (
-                <SelectItem key={cinema.id} value={cinema.id.toString()}>
-                  {cinema.displayName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <MovieShowtimes movieId={movieId} />
         </div>
       </div>
     </main>
