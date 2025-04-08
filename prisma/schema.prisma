@@ -64,5 +64,8 @@ model MovieEvent {
     auditorium           String
     auditoriumTinyName   String
     Cinema               Cinema   @relation(fields: [cinemaId], references: [id])
-    Movie                Movie?   @relation(fields: [filmId], references: [id])
+    Movie                Movie    @relation(fields: [filmId], references: [id])
+
+    @@index([cinemaId])
+    @@index([filmId])
 }
