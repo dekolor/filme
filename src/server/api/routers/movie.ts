@@ -31,9 +31,17 @@ export const movieRouter = createTRPCRouter({
       z.object({ limit: z.number().optional(), offset: z.number().optional() }),
     )
     .query(async ({ ctx, input }) => {
-      const movies = input
-        ? ctx.db.movie.findMany({ skip: input.offset, take: input.limit })
-        : ctx.db.movie.findMany();
+      const movies = ctx.db.movie.findMany({
+        skip: input.offset,
+        take: input.limit,
+        where: {
+          events: {
+            some: {
+              businessDay: { gte: new Date().toISOString() },
+            },
+          },
+        },
+      });
       return movies;
     }),
 
