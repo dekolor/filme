@@ -17,8 +17,17 @@ try {
   const cinemas = cinemasResponse.data.body.cinemas as Cinema[];
 
   const cinemaDataToCreate = cinemas.map((cinema: Cinema) => ({
-    ...cinema,
     id: Number(cinema.id),
+    groupId: cinema.groupId,
+    displayName: cinema.displayName,
+    link: cinema.link,
+    imageUrl: cinema.imageUrl,
+    address: cinema.address,
+    bookingUrl: cinema.bookingUrl,
+    blockOnlineSales: cinema.blockOnlineSales,
+    blockOnlineSalesUntil: cinema.blockOnlineSalesUntil,
+    latitude: cinema.latitude,
+    longitude: cinema.longitude,
   }));
 
   await prisma.cinema.createMany({
@@ -55,10 +64,18 @@ try {
       const eventsForDateToCreate = eventsForDate.map(
         (event: any) =>
           ({
-            ...event,
+            id: event.id,
+            filmId: event.filmId,
             cinemaId: Number(event.cinemaId),
+            businessDay: event.businessDay,
+            eventDateTime: event.eventDateTime,
             attributes: event.attributeIds,
+            bookingLink: event.bookingLink,
             secondaryBookingLink: event.secondaryBookingLink ?? "",
+            presentationCode: event.presentationCode,
+            soldOut: event.soldOut,
+            auditorium: event.auditorium,
+            auditoriumTinyName: event.auditoriumTinyName,
           }) as MovieEvent,
       );
 
