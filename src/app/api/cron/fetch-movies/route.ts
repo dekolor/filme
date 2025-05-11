@@ -35,26 +35,9 @@ export async function POST(request: Request) {
 
     const cinemas = cinemasResponse.data.body.cinemas as Cinema[];
 
-    if (!Array.isArray(cinemas)) {
-      console.error("API response for cinemas is not an array: ", cinemas);
-      return NextResponse.json(
-        { message: "Invalid data format received from API" },
-        { status: 500 },
-      );
-    }
-
     const cinemaDataToCreate = cinemas.map((cinema: Cinema) => ({
+      ...cinema,
       id: Number(cinema.id),
-      groupId: cinema.groupId,
-      displayName: cinema.displayName,
-      link: cinema.link,
-      imageUrl: cinema.imageUrl,
-      address: cinema.address,
-      bookingUrl: cinema.bookingUrl,
-      blockOnlineSales: cinema.blockOnlineSales,
-      blockOnlineSalesUntil: cinema.blockOnlineSalesUntil,
-      latitude: cinema.latitude,
-      longitude: cinema.longitude,
     }));
 
     const createdCinemasResult = await api.cinema.create(cinemaDataToCreate);
@@ -73,28 +56,8 @@ export async function POST(request: Request) {
 
         const moviesForDate = eventsForDateResponse.data.body.films as Movie[];
 
-        if (!Array.isArray(moviesForDate)) {
-          console.error(
-            "API response for movies is not an array: ",
-            moviesForDate,
-          );
-          return NextResponse.json(
-            { message: "Invalid data format received from API" },
-            { status: 500 },
-          );
-        }
-
         const moviesForDateToCreate = moviesForDate.map((movie: Movie) => ({
-          id: movie.id,
-          name: movie.name,
-          length: movie.length,
-          posterLink: movie.posterLink,
-          videoLink: movie.videoLink,
-          link: movie.link,
-          weight: movie.weight,
-          releaseYear: movie.releaseYear,
-          releaseDate: movie.releaseDate,
-          attributeIds: movie.attributeIds,
+          ...movie,
         }));
 
         await api.movie.create(moviesForDateToCreate);
@@ -102,43 +65,17 @@ export async function POST(request: Request) {
         const eventsForDate = eventsForDateResponse.data.body
           .events as MovieEvent[];
 
-        if (!Array.isArray(eventsForDate)) {
-          console.error(
-            "API response for events is not an array: ",
-            eventsForDate,
-          );
-          return NextResponse.json(
-            { message: "Invalid data format received from API" },
-            { status: 500 },
-          );
-        }
-
-        const eventsForDateToCreate = eventsForDate.map((event: any) => ({
-          id: event.id,
-          filmId: event.filmId,
-          cinemaId: Number(event.cinemaId),
-          businessDay: event.businessDay,
-          eventDateTime: event.eventDateTime,
-          attributes: event.attributeIds,
-          bookingLink: event.bookingLink,
-          secondaryBookingLink: event.secondaryBookingLink ?? "",
-          presentationCode: event.presentationCode,
-          soldOut: event.soldOut,
-          auditorium: event.auditorium,
-          auditoriumTinyName: event.auditoriumTinyName,
-        }));
-
-        console.log("eventsForDateToCreate", eventsForDateToCreate);
+        const eventsForDateToCreate = eventsForDate.map(
+          (event: any) =>
+            ({
+              ...event,
+              cinemaId: Number(event.cinemaId),
+              attributes: event.attributeIds,
+              secondaryBookingLink: event.secondaryBookingLink ?? "",
+            }) as MovieEvent,
+        );
 
         await api.movieEvent.create(eventsForDateToCreate);
-      }
-
-      if (!Array.isArray(dates)) {
-        console.error("API response for dates is not an array: ", dates);
-        return NextResponse.json(
-          { message: "Invalid data format received from API" },
-          { status: 500 },
-        );
       }
     }
 
