@@ -30,7 +30,9 @@ export default function ShowtimeGrid({
   useEffect(() => {
     if (events) {
       setShowtimes(events);
-      setAvailableDates([...new Set(events.map((event) => event.businessDay))]);
+      setAvailableDates(
+        [...new Set(events.map((event) => event.businessDay))].sort(),
+      );
     }
   }, [events]);
 
