@@ -90,11 +90,11 @@ export default function Movie({ movieId }: { movieId: string }) {
           </div>
 
           <div className="mb-6">
-            <h2 className="mb-2 font-semibold">Synopsis</h2>
-            <p>synopsis</p>
+            <h2 className="mb-2 font-semibold">Description</h2>
+            <p>{movie?.description}</p>
           </div>
 
-          <div className="mb-8 grid grid-cols-2 gap-6">
+          {/* <div className="mb-8 grid grid-cols-2 gap-6">
             <div>
               <h2 className="mb-2 font-semibold">Director</h2>
               <p>director</p>
@@ -103,7 +103,7 @@ export default function Movie({ movieId }: { movieId: string }) {
               <h2 className="mb-2 font-semibold">Cast</h2>
               <ul className="space-y-1">actor list here</ul>
             </div>
-          </div>
+          </div> */}
 
           <h2 className="mb-6 text-2xl font-bold">Showtimes</h2>
 
