@@ -12,9 +12,15 @@ import type { Movie } from "@prisma/client";
 import { DateTime } from "luxon";
 
 export default function FeaturedMovies() {
-  const { data: movies, isLoading } = api.movie.getAll.useQuery({ limit: 4 });
+  const { data: movies, isLoading } = api.movie.getAll.useQuery({
+    limit: 4,
+    orderByPopularity: "desc",
+  });
   const { data: upcomingMovies, isLoading: isUpcomingLoading } =
-    api.movie.getAllUpcoming.useQuery({ limit: 4 });
+    api.movie.getAllUpcoming.useQuery({
+      limit: 4,
+      orderByPopularity: "desc",
+    });
 
   if (isLoading) {
     return <div className="container mx-auto px-4 py-8">Loading...</div>;

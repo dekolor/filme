@@ -6,7 +6,11 @@ import Link from "next/link";
 import { api } from "~/trpc/react";
 
 export default function FeaturedMovie() {
-  const { data: movie, isLoading } = api.movie.search.useQuery("buzz");
+  const { data: movie, isLoading } = api.movie.getAll.useQuery({
+    limit: 1,
+    orderByPopularity: "desc",
+    hasDescription: true,
+  });
 
   const featuredMovie = movie?.[0];
 
@@ -29,8 +33,7 @@ export default function FeaturedMovie() {
             Now Showing: {featuredMovie?.name}
           </h1>
           <p className="mb-4 max-w-2xl text-white/80">
-            The saga continues as Paul Atreides unites with the Fremen to seek
-            revenge against the conspirators who destroyed his family.
+            {featuredMovie?.description}
           </p>
           <Button asChild>
             <Link href={`/movies/${featuredMovie?.id}`}>View Showtimes</Link>

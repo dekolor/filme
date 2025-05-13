@@ -10,15 +10,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@index([name])
-}
-
 model Cinema {
     id                    Int       @id
     groupId               String
@@ -36,16 +27,19 @@ model Cinema {
 }
 
 model Movie {
-    id           String   @id
-    name         String
-    length       Int
-    posterLink   String
-    videoLink    String?
-    link         String
-    weight       Int
-    releaseYear  String?
-    releaseDate  String
-    attributeIds String[]
+    id             String   @id
+    name           String
+    length         Int
+    posterLink     String
+    videoLink      String?
+    link           String
+    weight         Int
+    releaseYear    String?
+    releaseDate    String
+    attributeIds   String[]
+    imdbId         String?
+    description    String?
+    tmdbPopularity Float?
 
     events MovieEvent[]
 }

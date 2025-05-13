@@ -28,12 +28,33 @@ export const movieRouter = createTRPCRouter({
 
   getAll: publicProcedure
     .input(
-      z.object({ limit: z.number().optional(), offset: z.number().optional() }),
+      z.object({
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+        orderByPopularity: z.enum(["asc", "desc"]).optional(),
+        hasDescription: z.boolean().optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
-      const movies = input
-        ? ctx.db.movie.findMany({ skip: input.offset, take: input.limit })
-        : ctx.db.movie.findMany();
+      const movies = ctx.db.movie.findMany({
+        skip: input.offset,
+        take: input.limit,
+        where: {
+          events: {
+            some: {
+              businessDay: { gte: new Date().toISOString() },
+            },
+          },
+          ...(input.hasDescription && {
+            description: {
+              not: null,
+            },
+          }),
+        },
+        orderBy: {
+          tmdbPopularity: input.orderByPopularity,
+        },
+      });
       return movies;
     }),
 
@@ -42,6 +63,7 @@ export const movieRouter = createTRPCRouter({
       z.object({
         limit: z.number().optional(),
         offset: z.number().optional(),
+        orderByPopularity: z.enum(["asc", "desc"]).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -53,6 +75,9 @@ export const movieRouter = createTRPCRouter({
         },
         skip: input.offset,
         take: input.limit,
+        orderBy: {
+          tmdbPopularity: input.orderByPopularity,
+        },
       });
       return movies;
     }),
