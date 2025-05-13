@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "~/trpc/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "MovieTime",
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} dark`}>
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
