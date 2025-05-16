@@ -8,25 +8,39 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { notFound } from "next/navigation";
-
-// Group movies by date (for this demo, we're just using "Today" and "Tomorrow")
-const dates = ["Today", "Tomorrow"];
+import { useEffect, useState } from "react";
+import type { Movie } from "@prisma/client";
+import { DateTime } from "luxon";
 
 export default function Cinema({ cinemaId }: { cinemaId: string }) {
   const { data: cinema, isLoading } = api.cinema.getById.useQuery(cinemaId);
+  const [movies, setMovies] = useState<Movie[]>([]);
 
-  // Only show 404 if we've finished loading and still don't have data
+  const { data: movieEvents } = api.movieEvent.getByCinemaIdToday.useQuery({
+    cinemaId: parseInt(cinemaId),
+  });
+
+  useEffect(() => {
+    if (movieEvents) {
+      const uniqueMovies = Array.from(
+        new Map(
+          movieEvents.map((event) => [event.Movie.id, event.Movie]),
+        ).values(),
+      );
+      setMovies(uniqueMovies);
+    }
+  }, [movieEvents]);
+
   if (!isLoading && !cinema) {
     notFound();
   }
 
-  // Show loading state or skeleton while data is loading
   if (isLoading) {
     return <div className="container mx-auto px-4 py-8">Loading...</div>;
   }
 
-  // At this point, we know cinema exists
   const cinemaData = cinema!;
+  const movieEventsData = movieEvents!;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -64,6 +78,7 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
           <div>
             <h2 className="mb-3 font-semibold">Amenities</h2>
             <div className="grid grid-cols-2 gap-2">
+              {/* Fake data, need to update with actual cinema data */}
               {[
                 "IMAX",
                 "Dolby Atmos",
@@ -86,111 +101,67 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
 
       <h2 className="mb-6 text-2xl font-bold">Movies & Showtimes</h2>
 
-      <Tabs defaultValue={dates[0]}>
+      <Tabs defaultValue="today">
         <TabsList className="mb-6">
-          {dates.map((date) => (
-            <TabsTrigger key={date} value={date}>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>{date}</span>
-              </div>
-            </TabsTrigger>
-          ))}
+          <TabsTrigger value="today">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>Today</span>
+            </div>
+          </TabsTrigger>
         </TabsList>
 
-        {dates.map((date) => (
-          <TabsContent key={date} value={date} className="space-y-8">
-            {[
-              {
-                id: "dune-part-two",
-                title: "Dune: Part Two",
-                image: "https://picsum.photos/300/400",
-                rating: "PG-13",
-                showtimes: [
-                  { time: "10:30 AM", format: "Standard" },
-                  { time: "1:45 PM", format: "IMAX" },
-                  { time: "5:00 PM", format: "Standard" },
-                  { time: "8:15 PM", format: "IMAX" },
-                  { time: "11:30 PM", format: "Standard" },
-                ],
-              },
-              {
-                id: "poor-things",
-                title: "Poor Things",
-                image: "https://picsum.photos/300/400",
-                rating: "R",
-                showtimes: [
-                  { time: "11:15 AM", format: "Standard" },
-                  { time: "2:45 PM", format: "Standard" },
-                  { time: "6:15 PM", format: "Standard" },
-                  { time: "9:45 PM", format: "Standard" },
-                ],
-              },
-              {
-                id: "the-fall-guy",
-                title: "The Fall Guy",
-                image: "https://picsum.photos/300/400",
-                rating: "PG-13",
-                showtimes: [
-                  { time: "10:45 AM", format: "Standard" },
-                  { time: "1:30 PM", format: "Standard" },
-                  { time: "4:15 PM", format: "Standard" },
-                  { time: "7:00 PM", format: "Standard" },
-                  { time: "9:45 PM", format: "Standard" },
-                ],
-              },
-            ].map((movie) => (
-              <Card key={movie.id}>
-                <CardContent className="p-0">
-                  <div className="flex flex-col sm:flex-row">
-                    <div className="shrink-0 sm:w-[120px] md:w-[180px]">
-                      <div className="relative aspect-[2/3] h-full">
-                        <Image
-                          src={movie.image || "/placeholder.svg"}
-                          alt={movie.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex-1 p-4">
-                      <div className="mb-4 flex items-start justify-between">
-                        <Link
-                          href={`/movies/${movie.id}`}
-                          className="text-xl font-semibold hover:underline"
-                        >
-                          {movie.title}
-                        </Link>
-                      </div>
-
-                      <div className="text-muted-foreground mb-4 flex items-center text-sm">
-                        <Clock className="mr-1 h-4 w-4" />
-                        {date === "Today"
-                          ? "Today's Showtimes"
-                          : "Tomorrow's Showtimes"}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {movie.showtimes.map((showtime, index) => (
-                          <Button
-                            key={index}
-                            variant="outline"
-                            className="flex h-auto flex-col py-3"
-                          >
-                            <span>{showtime.time}</span>
-                            <span className="text-muted-foreground mt-1 text-xs">
-                              {showtime.format}
-                            </span>
-                          </Button>
-                        ))}
-                      </div>
+        <TabsContent value="today" className="space-y-8">
+          {movies.map((movie) => (
+            <Card key={movie.id}>
+              <CardContent className="p-0">
+                <div className="flex flex-col sm:flex-row">
+                  <div className="shrink-0 sm:w-[120px] md:w-[180px]">
+                    <div className="relative aspect-[2/3] h-full">
+                      <Image
+                        src={movie.posterLink || "/placeholder.svg"}
+                        alt={movie.name}
+                        width={180}
+                        height={270}
+                        className="object-cover"
+                      />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-        ))}
+                  <div className="flex-1 p-4">
+                    <div className="mb-4 flex items-start justify-between">
+                      <Link
+                        href={`/movies/${movie.id}`}
+                        className="text-xl font-semibold hover:underline"
+                      >
+                        {movie.name}
+                      </Link>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                      {movieEventsData.map((showtime, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          className="flex h-auto flex-col py-3"
+                        >
+                          <span>
+                            {" "}
+                            {DateTime.fromISO(showtime.eventDateTime).toFormat(
+                              "d MMM, HH:mm ",
+                            )}
+                          </span>
+                          <span className="text-muted-foreground mt-1 text-xs">
+                            {showtime.auditorium}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
       </Tabs>
     </main>
   );
