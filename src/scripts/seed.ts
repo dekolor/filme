@@ -1,6 +1,7 @@
 // re-runnable
 
 import { PrismaClient } from "@prisma/client";
+import { DateTime } from "luxon";
 
 const prisma = new PrismaClient();
 
@@ -134,8 +135,8 @@ async function main() {
         id: "EV1",
         filmId: "MOV1",
         cinemaId: 1,
-        businessDay: "2025-06-01",
-        eventDateTime: "2025-06-01T18:00:00",
+        businessDay: DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd'),
+        eventDateTime: DateTime.now().plus({ days: 1 }).set({ hour: 18, minute: 0 }).toISO(),
         attributes: ["SUB", "2D"],
         bookingLink: "https://example.com/booking/ev1",
         secondaryBookingLink: null,
@@ -148,8 +149,8 @@ async function main() {
         id: "EV2",
         filmId: "MOV1",
         cinemaId: 2,
-        businessDay: "2025-06-01",
-        eventDateTime: "2025-06-01T20:30:00",
+        businessDay: DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd'),
+        eventDateTime: DateTime.now().plus({ days: 1 }).set({ hour: 20, minute: 30 }).toISO(),
         attributes: ["SUB", "2D"],
         bookingLink: "https://example.com/booking/ev2",
         secondaryBookingLink: null,
@@ -162,8 +163,8 @@ async function main() {
         id: "EV3",
         filmId: "MOV2",
         cinemaId: 3,
-        businessDay: "2025-06-02",
-        eventDateTime: "2025-06-02T19:00:00",
+        businessDay: DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd'),
+        eventDateTime: DateTime.now().plus({ days: 1 }).set({ hour: 19, minute: 0 }).toISO(),
         attributes: ["RO"],
         bookingLink: "https://example.com/booking/ev3",
         secondaryBookingLink: null,
@@ -176,8 +177,8 @@ async function main() {
         id: "EV4",
         filmId: "MOV3",
         cinemaId: 1,
-        businessDay: "2025-06-03",
-        eventDateTime: "2025-06-03T16:45:00",
+        businessDay: DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd'),
+        eventDateTime: DateTime.now().plus({ days: 1 }).set({ hour: 16, minute: 45 }).toISO(),
         attributes: ["EN", "3D"],
         bookingLink: "https://example.com/booking/ev4",
         secondaryBookingLink: null,
@@ -190,8 +191,8 @@ async function main() {
         id: "EV5",
         filmId: "MOV3",
         cinemaId: 2,
-        businessDay: "2025-06-03",
-        eventDateTime: "2025-06-03T21:15:00",
+        businessDay: DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd'),
+        eventDateTime: DateTime.now().plus({ days: 1 }).set({ hour: 21, minute: 15 }).toISO(),
         attributes: ["EN", "3D"],
         bookingLink: "https://example.com/booking/ev5",
         secondaryBookingLink: "https://example.com/booking-alt/ev5",
