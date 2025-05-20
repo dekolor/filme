@@ -5,12 +5,59 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Clock } from "lucide-react";
+import { Skeleton } from "~/components/ui/skeleton";
+
+function MovieSearchCardSkeleton() {
+  return (
+    <div className="bg-card flex flex-col gap-4 overflow-hidden rounded-lg shadow-sm sm:flex-row">
+      <div className="shrink-0 sm:w-[120px] md:w-[180px]">
+        <Skeleton className="relative aspect-[2/3] h-full w-full rounded-lg" />
+      </div>
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <Skeleton className="h-7 w-2/3 max-w-xs rounded" />
+          <Skeleton className="h-6 w-16 rounded" />
+        </div>
+        <div className="text-muted-foreground mt-2 flex items-center gap-4 text-sm">
+          <Skeleton className="h-5 w-20 rounded" />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Skeleton className="h-6 w-16 rounded" />
+          <Skeleton className="h-6 w-14 rounded" />
+        </div>
+        <div className="mt-3">
+          <Skeleton className="mb-1 h-4 w-full rounded" />
+          <Skeleton className="mb-1 h-4 w-5/6 rounded" />
+          <Skeleton className="h-4 w-2/3 rounded" />
+        </div>
+        <div className="mt-4">
+          <Skeleton className="h-10 w-40 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoviesSearchSkeleton() {
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <Skeleton className="mb-2 h-8 w-80 max-w-full rounded" />
+        <Skeleton className="h-5 w-32 rounded" />
+      </div>
+      <div className="space-y-6">
+        <MovieSearchCardSkeleton key={1} />
+        <MovieSearchCardSkeleton key={2} />
+      </div>
+    </main>
+  );
+}
 
 export default function SearchResults({ query }: { query: string }) {
   const { data: results, isLoading } = api.movie.search.useQuery(query);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <MoviesSearchSkeleton />;
   }
 
   return (
@@ -66,7 +113,7 @@ export default function SearchResults({ query }: { query: string }) {
                 ))}
               </div>
               <p className="mt-3 line-clamp-2 text-sm md:line-clamp-3">
-                synopsis here
+                {movie.description}
               </p>
               <div className="mt-4">
                 <Button asChild>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, Phone, Clock, Calendar } from "lucide-react";
+import { MapPin, Calendar, ExternalLink } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -9,12 +9,99 @@ import Link from "next/link";
 import { api } from "~/trpc/react";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { Movie } from "@prisma/client";
+import type { Movie, MovieEvent } from "@prisma/client";
 import { DateTime } from "luxon";
+import { Skeleton } from "~/components/ui/skeleton";
+
+function groupShowtimes(showtimes: MovieEvent[]) {
+  return {
+    Morning: showtimes.filter(
+      (s) => DateTime.fromISO(s.eventDateTime).hour < 12,
+    ),
+    Afternoon: showtimes.filter(
+      (s) =>
+        DateTime.fromISO(s.eventDateTime).hour >= 12 &&
+        DateTime.fromISO(s.eventDateTime).hour < 18,
+    ),
+    Evening: showtimes.filter(
+      (s) =>
+        DateTime.fromISO(s.eventDateTime).hour >= 18 &&
+        DateTime.fromISO(s.eventDateTime).hour < 22,
+    ),
+    Night: showtimes.filter(
+      (s) => DateTime.fromISO(s.eventDateTime).hour >= 22,
+    ),
+  };
+}
+
+function CinemaMovieCardSkeleton() {
+  return (
+    <Card className="overflow-hidden rounded-2xl bg-zinc-900 shadow-2xl">
+      <CardContent className="p-0">
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex shrink-0 justify-center py-4 sm:w-[120px] sm:py-0 sm:pl-4 md:w-[180px]">
+            <Skeleton className="relative aspect-[2/3] h-[180px] w-[120px] rounded-xl bg-zinc-800 shadow-lg md:h-[270px] md:w-[180px]" />
+          </div>
+          <div className="flex flex-1 flex-col p-4">
+            <Skeleton className="mb-4 h-8 w-2/3 rounded" />
+            <Skeleton className="mb-2 h-6 w-28 rounded" />
+            <div className="flex flex-wrap gap-3">
+              <Skeleton className="h-16 min-w-[120px] rounded-xl" />
+              <Skeleton className="h-16 min-w-[120px] rounded-xl" />
+              <Skeleton className="h-16 min-w-[120px] rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function CinemaDetailsSkeleton() {
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="mb-10">
+        <div className="relative mb-6 h-[220px] overflow-hidden rounded-2xl shadow-lg md:h-[340px]">
+          <Skeleton className="absolute inset-0 h-full w-full" />
+          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6">
+            <Skeleton className="h-12 w-2/3 max-w-lg rounded" />
+          </div>
+        </div>
+        <div className="grid gap-6 text-lg md:grid-cols-2">
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-6 w-56 rounded" />
+            </div>
+            <div className="flex items-start gap-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-6 w-36 rounded" />
+            </div>
+            <div className="flex items-start gap-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-6 w-40 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <Skeleton className="mb-6 h-8 w-52 rounded" />
+      <div className="mb-6 flex gap-2">
+        <Skeleton className="h-9 w-28 rounded-xl" />
+      </div>
+      <div className="space-y-8">
+        <CinemaMovieCardSkeleton />
+        <CinemaMovieCardSkeleton />
+        <CinemaMovieCardSkeleton />
+      </div>
+    </main>
+  );
+}
 
 export default function Cinema({ cinemaId }: { cinemaId: string }) {
   const { data: cinema, isLoading } = api.cinema.getById.useQuery(cinemaId);
   const [movies, setMovies] = useState<Movie[]>([]);
+
+  const [grouped, setGrouped] = useState<Record<string, MovieEvent[]>>({});
 
   const { data: movieEvents } = api.movieEvent.getByCinemaIdToday.useQuery({
     cinemaId: parseInt(cinemaId),
@@ -28,6 +115,9 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
         ).values(),
       );
       setMovies(uniqueMovies);
+
+      const grouped = groupShowtimes(movieEvents);
+      setGrouped(grouped);
     }
   }, [movieEvents]);
 
@@ -36,16 +126,15 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
   }
 
   if (isLoading) {
-    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+    return <CinemaDetailsSkeleton />;
   }
 
   const cinemaData = cinema!;
-  const movieEventsData = movieEvents!;
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="relative mb-6 h-[200px] overflow-hidden rounded-xl md:h-[300px]">
+      <div className="mb-10">
+        <div className="relative mb-6 h-[220px] overflow-hidden rounded-2xl shadow-lg md:h-[340px]">
           <Image
             src={cinemaData.imageUrl || "/placeholder.svg"}
             alt={cinemaData.displayName}
@@ -53,47 +142,42 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent p-6">
-            <h1 className="text-3xl font-bold text-white">
+          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6">
+            <h1 className="text-3xl font-bold text-white drop-shadow-lg md:text-4xl">
               {cinemaData.displayName}
             </h1>
           </div>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
-          <div>
-            <div className="mb-4 flex items-start gap-2">
-              <MapPin className="text-muted-foreground mt-0.5 h-5 w-5" />
-              <p>{cinemaData.address}</p>
+        <div className="grid gap-6 text-lg md:grid-cols-2">
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <MapPin className="text-primary mt-0.5 h-5 w-5" />
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cinemaData.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {cinemaData.address}
+              </a>
             </div>
-            <div className="mb-4 flex items-start gap-2">
-              <Phone className="text-muted-foreground mt-0.5 h-5 w-5" />
-              <p>
-                {cinemaData.latitude} - {cinemaData.longitude}
-              </p>
+            <div className="flex items-start gap-2">
+              <MapPin className="text-primary mt-0.5 h-5 w-5" />
+              <span className="text-muted-foreground">
+                {cinemaData.latitude} — {cinemaData.longitude}
+              </span>
             </div>
-            <p className="mb-4">{cinemaData.link}</p>
-          </div>
-
-          <div>
-            <h2 className="mb-3 font-semibold">Amenities</h2>
-            <div className="grid grid-cols-2 gap-2">
-              {/* Fake data, need to update with actual cinema data */}
-              {[
-                "IMAX",
-                "Dolby Atmos",
-                "Recliner Seats",
-                "Food & Drinks",
-                "Parking",
-              ].map((amenity) => (
-                <div
-                  key={amenity}
-                  className="bg-muted flex items-center gap-2 rounded-md p-2"
-                >
-                  <div className="bg-primary h-2 w-2 rounded-full"></div>
-                  <span>{amenity}</span>
-                </div>
-              ))}
+            <div className="flex items-start gap-2">
+              <ExternalLink className="text-primary mt-0.5 h-5 w-5" />
+              <a
+                href={cinemaData.link}
+                className="break-all hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {cinemaData.link}
+              </a>
             </div>
           </div>
         </div>
@@ -112,55 +196,74 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
         </TabsList>
 
         <TabsContent value="today" className="space-y-8">
-          {movies.map((movie) => (
-            <Card key={movie.id}>
-              <CardContent className="p-0">
-                <div className="flex flex-col sm:flex-row">
-                  <div className="shrink-0 sm:w-[120px] md:w-[180px]">
-                    <div className="relative aspect-[2/3] h-full">
-                      <Image
-                        src={movie.posterLink || "/placeholder.svg"}
-                        alt={movie.name}
-                        width={180}
-                        height={270}
-                        className="object-cover"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-1 p-4">
-                    <div className="mb-4 flex items-start justify-between">
-                      <Link
-                        href={`/movies/${movie.id}`}
-                        className="text-xl font-semibold hover:underline"
-                      >
-                        {movie.name}
-                      </Link>
+          {movies.length > 0 ? (
+            movies.map((movie) => (
+              <Card
+                key={movie.id}
+                className="overflow-hidden rounded-2xl bg-zinc-900 shadow-2xl"
+              >
+                <CardContent className="p-0">
+                  <div className="flex flex-col gap-4 sm:flex-row">
+                    <div className="flex shrink-0 justify-center py-4 sm:w-[120px] sm:py-0 sm:pl-4 md:w-[180px]">
+                      <div className="relative aspect-[2/3] h-[180px] w-[120px] overflow-hidden rounded-xl bg-zinc-800 shadow-lg md:h-[270px] md:w-[180px]">
+                        <Image
+                          src={movie.posterLink || "/placeholder.svg"}
+                          alt={movie.name}
+                          fill
+                          className="rounded-xl object-cover"
+                          sizes="(max-width: 640px) 120px, 180px"
+                        />
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                      {movieEventsData.map((showtime, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          className="flex h-auto flex-col py-3"
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="mb-4 flex items-start justify-between">
+                        <Link
+                          href={`/movies/${movie.id}`}
+                          className="text-2xl leading-tight font-bold text-white hover:underline"
                         >
-                          <span>
-                            {" "}
-                            {DateTime.fromISO(showtime.eventDateTime).toFormat(
-                              "d MMM, HH:mm ",
-                            )}
-                          </span>
-                          <span className="text-muted-foreground mt-1 text-xs">
-                            {showtime.auditorium}
-                          </span>
-                        </Button>
-                      ))}
+                          {movie.name}
+                        </Link>
+                      </div>
+
+                      <div className="space-y-4">
+                        {Object.entries(grouped).map(
+                          ([period, times]) =>
+                            times.length > 0 && (
+                              <div key={period}>
+                                <div className="mb-2 text-lg font-semibold text-zinc-300">
+                                  {period}
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                  {times.map((showtime, idx) => (
+                                    <Button
+                                      key={idx}
+                                      variant="outline"
+                                      className="flex h-16 min-w-[120px] flex-col items-center justify-center rounded-xl border-zinc-700 bg-zinc-800/70 shadow-md transition hover:bg-zinc-700"
+                                    >
+                                      <span className="text-base font-medium text-white">
+                                        {DateTime.fromISO(
+                                          showtime.eventDateTime,
+                                        ).toFormat("d MMM, HH:mm")}
+                                      </span>
+                                      <span className="mt-1 text-xs text-zinc-400">
+                                        {showtime.auditorium}
+                                      </span>
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                            ),
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <CinemaMovieCardSkeleton />
+          )}
         </TabsContent>
       </Tabs>
     </main>
