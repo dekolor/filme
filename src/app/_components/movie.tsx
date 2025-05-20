@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Clock, Star } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import Image from "next/image";
 import { api } from "~/trpc/react";
@@ -9,6 +9,7 @@ import { DateTime } from "luxon";
 import { useState, useEffect } from "react";
 
 import MovieShowtimes from "./movie-showtimes";
+import { Skeleton } from "~/components/ui/skeleton";
 
 export default function Movie({ movieId }: { movieId: string }) {
   const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null);
@@ -31,7 +32,37 @@ export default function Movie({ movieId }: { movieId: string }) {
   }, [selectedCinemaId, cinemas]);
 
   if (isLoading || cinemasLoading) {
-    return <div>Loading...</div>;
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-8 md:flex-row">
+          <div className="md:w-1/3 lg:w-1/4">
+            <Skeleton className="relative aspect-[2/3] w-full rounded-lg shadow-md" />
+          </div>
+          <div className="flex flex-col md:w-2/3 lg:w-3/4">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
+              <Skeleton className="h-10 w-2/3 max-w-xs rounded" />
+              <Skeleton className="h-8 w-28 rounded" />
+            </div>
+            <div className="text-muted-foreground mb-6 flex flex-wrap gap-4 text-sm">
+              <Skeleton className="h-5 w-24 rounded" />
+              <Skeleton className="h-5 w-32 rounded" />
+            </div>
+            <div className="mb-6 flex flex-wrap gap-2">
+              <Skeleton className="h-7 w-16 rounded" />
+              <Skeleton className="h-7 w-14 rounded" />
+              <Skeleton className="h-7 w-20 rounded" />
+            </div>
+            <div className="mb-6">
+              <Skeleton className="mb-2 h-6 w-32 rounded" />
+              <Skeleton className="mb-1 h-4 w-full rounded" />
+              <Skeleton className="mb-1 h-4 w-5/6 rounded" />
+              <Skeleton className="h-4 w-2/3 rounded" />
+            </div>
+            <Skeleton className="mb-6 h-8 w-40 rounded" />
+          </div>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -61,10 +92,6 @@ export default function Movie({ movieId }: { movieId: string }) {
                   DateTime.DATE_MED,
                 )}
               </Badge>
-              <div className="flex items-center gap-1 rounded-md bg-yellow-500 px-2 py-1 text-sm font-medium text-black">
-                <Star className="h-4 w-4 fill-black" />
-                9.5
-              </div>
             </div>
           </div>
 
@@ -93,17 +120,6 @@ export default function Movie({ movieId }: { movieId: string }) {
             <h2 className="mb-2 font-semibold">Description</h2>
             <p>{movie?.description}</p>
           </div>
-
-          {/* <div className="mb-8 grid grid-cols-2 gap-6">
-            <div>
-              <h2 className="mb-2 font-semibold">Director</h2>
-              <p>director</p>
-            </div>
-            <div>
-              <h2 className="mb-2 font-semibold">Cast</h2>
-              <ul className="space-y-1">actor list here</ul>
-            </div>
-          </div> */}
 
           <h2 className="mb-6 text-2xl font-bold">Showtimes</h2>
 

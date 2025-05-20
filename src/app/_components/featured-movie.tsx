@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { api } from "~/trpc/react";
+import { Skeleton } from "~/components/ui/skeleton";
 
 export default function FeaturedMovie() {
   const { data: movie, isLoading } = api.movie.getAll.useQuery({
@@ -15,31 +16,55 @@ export default function FeaturedMovie() {
   const featuredMovie = movie?.[0];
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="bg-muted relative mb-10 flex h-[340px] items-center overflow-hidden rounded-xl">
+        <Skeleton className="absolute inset-0 scale-105 object-cover blur-md brightness-60" />
+
+        <div className="relative z-10 flex w-full flex-row items-center gap-6 px-6">
+          <Skeleton className="hidden h-[180px] w-[120px] rounded-xl shadow-xl md:block" />
+          <div className="flex max-w-lg flex-1 flex-col">
+            <Skeleton className="mb-2 h-6 w-24 rounded bg-white/10" />
+            <Skeleton className="mb-2 h-10 w-3/4 rounded" />
+            <Skeleton className="mb-4 h-4 w-full rounded" />
+            <Skeleton className="mb-1 h-4 w-5/6 rounded" />
+            <Skeleton className="mb-4 h-4 w-2/3 rounded" />
+            <Skeleton className="h-10 w-40 rounded" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <section className="mb-12">
-      <div className="relative mb-6 h-[300px] overflow-hidden rounded-xl md:h-[400px]">
+    <div className="relative mb-10 flex h-[340px] items-center overflow-hidden rounded-xl">
+      <Image
+        src={featuredMovie?.posterLink ?? ""}
+        alt=""
+        fill
+        className="scale-105 object-cover blur-md brightness-60"
+        aria-hidden
+      />
+      <div className="relative z-10 flex flex-row items-center gap-6 px-6">
         <Image
           src={featuredMovie?.posterLink ?? ""}
-          alt="Now showing: Dune Part Two"
-          fill
-          className="object-cover"
-          priority
+          alt={featuredMovie?.name ?? ""}
+          width={120}
+          height={180}
+          className="hidden rounded-xl shadow-xl md:block"
         />
-        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent p-6">
-          <h1 className="mb-2 text-3xl font-bold text-white md:text-4xl">
-            Now Showing: {featuredMovie?.name}
+        <div className="flex max-w-lg flex-col">
+          <span className="mb-2 w-max rounded bg-white/10 px-3 py-1 text-xs text-white">
+            Now Showing
+          </span>
+          <h1 className="mb-2 text-3xl font-bold text-white">
+            {featuredMovie?.name}
           </h1>
-          <p className="mb-4 max-w-2xl text-white/80">
-            {featuredMovie?.description}
-          </p>
+          <p className="mb-4 text-white/90">{featuredMovie?.description}</p>
           <Button asChild>
             <Link href={`/movies/${featuredMovie?.id}`}>View Showtimes</Link>
           </Button>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
