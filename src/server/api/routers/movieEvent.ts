@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
@@ -40,6 +41,23 @@ export const movieEventRouter = createTRPCRouter({
           },
         },
         include: { Cinema: true },
+      });
+    }),
+
+  getByCinemaIdToday: publicProcedure
+    .input(z.object({ cinemaId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.movieEvent.findMany({
+        where: {
+          cinemaId: input.cinemaId,
+          businessDay: {
+            equals: DateTime.now().toFormat("yyyy-MM-dd"),
+          },
+        },
+        orderBy: {
+          eventDateTime: "asc",
+        },
+        include: { Movie: true },
       });
     }),
 });

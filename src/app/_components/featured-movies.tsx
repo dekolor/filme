@@ -10,6 +10,46 @@ import { Clock, Star } from "lucide-react";
 import { api } from "~/trpc/react";
 import type { Movie } from "@prisma/client";
 import { DateTime } from "luxon";
+import { Skeleton } from "~/components/ui/skeleton";
+
+export function MovieCardSkeleton() {
+  return (
+    <Card className="group overflow-hidden">
+      <div className="relative aspect-[2/3] overflow-hidden">
+        <Skeleton className="absolute inset-0 h-full w-full" />
+        <Skeleton className="absolute top-2 left-2 h-6 w-20 rounded-md" />
+        <Skeleton className="absolute top-2 right-2 h-6 w-12 rounded-md" />
+      </div>
+      <CardContent className="p-3">
+        <Skeleton className="mb-2 h-6 w-3/4 rounded" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-4 rounded-full" />
+          <Skeleton className="h-4 w-12 rounded" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MoviesTabsSkeleton() {
+  return (
+    <section>
+      <div className="mb-6 flex items-center justify-between">
+        <Skeleton className="h-8 w-32 rounded" />
+        <div className="flex gap-2">
+          <Skeleton className="h-8 w-24 rounded" />
+          <Skeleton className="h-8 w-24 rounded" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4">
+        <MovieCardSkeleton />
+        <MovieCardSkeleton />
+        <MovieCardSkeleton />
+        <MovieCardSkeleton />
+      </div>
+    </section>
+  );
+}
 
 export default function FeaturedMovies() {
   const { data: movies, isLoading } = api.movie.getAll.useQuery({
@@ -23,11 +63,11 @@ export default function FeaturedMovies() {
     });
 
   if (isLoading) {
-    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+    return <MoviesTabsSkeleton />;
   }
 
   if (isUpcomingLoading) {
-    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+    return <MoviesTabsSkeleton />;
   }
 
   return (
