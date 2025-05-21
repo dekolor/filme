@@ -13,6 +13,7 @@ export const env = createEnv({
       .default("development"),
     CRON_SECRET: z.string(),
     TMDB_API_KEY: z.string(),
+    VERCEL_PROTECTION_BYPASS: z.string(),
   },
 
   /**
@@ -33,6 +34,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     CRON_SECRET: process.env.CRON_SECRET,
     TMDB_API_KEY: process.env.TMDB_API_KEY,
+    VERCEL_PROTECTION_BYPASS: process.env.VERCEL_PROTECTION_BYPASS,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

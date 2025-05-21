@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { DateTime } from "luxon";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('http://localhost:3000/movies/MOV1');
+  await page.goto('movies/MOV1');
 });
 
 test('has basic info', async ({ page }) => {

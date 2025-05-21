@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('http://localhost:3000');
+  await page.goto('/');
 });
 
 test('has title', async ({ page }) => {
@@ -34,6 +34,6 @@ test('has featured cinemas', async ({ page }) => {
 
 test('clicking on featured movie opens movie page', async ({ page }) => {
   await page.getByTestId('featured-movie').locator('a[data-slot="button"]').click();
-  await expect(page).toHaveURL('http://localhost:3000/movies/MOV1');
+  await expect(page).toHaveURL('movies/MOV1');
 });
 
