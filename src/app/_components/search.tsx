@@ -76,6 +76,7 @@ export default function SearchResults({ query }: { query: string }) {
           <div
             key={movie.id}
             className="bg-card flex flex-col gap-4 overflow-hidden rounded-lg shadow-sm sm:flex-row"
+            data-testid="movie-search-card"
           >
             <div className="shrink-0 sm:w-[120px] md:w-[180px]">
               <div className="relative aspect-[2/3] h-full">
