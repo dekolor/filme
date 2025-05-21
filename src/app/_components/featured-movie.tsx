@@ -36,7 +36,7 @@ export default function FeaturedMovie() {
   }
 
   return (
-    <div className="relative mb-10 flex h-[340px] items-center overflow-hidden rounded-xl">
+    <div data-testid="featured-movie" className="relative mb-10 flex h-[340px] items-center overflow-hidden rounded-xl">
       <Image
         src={featuredMovie?.posterLink ?? ""}
         alt=""

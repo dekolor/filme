@@ -38,7 +38,7 @@ export default function FeaturedCinemas() {
   }
 
   return (
-    <section className="my-12">
+    <section data-testid="featured-cinemas" className="my-12">
       <h2 className="mb-6 text-2xl font-bold">Popular Cinemas</h2>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {cinemas?.map((cinema) => (
@@ -46,6 +46,7 @@ export default function FeaturedCinemas() {
             key={cinema.id}
             href={`/cinemas/${cinema.id}`}
             className="group block"
+            data-testid="featured-cinema"
           >
             <div className="bg-card overflow-hidden rounded-lg shadow-md transition-all group-hover:shadow-lg">
               <div className="relative h-40">

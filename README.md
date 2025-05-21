@@ -1,29 +1,68 @@
-# Create T3 App
+# MovieTime 🎬
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+[Live Demo](https://filme.dekolor.ro)
 
-## What's next? How do I make an app with this?
+A modern web app for discovering movies and showtimes at all Cinema City locations across Romania. Designed for fast, real-world usage with automatic nightly data updates and end-to-end testing.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+---
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Features
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+* **Up-to-date Showtimes:** Fetches and displays current and upcoming movies for every cinema in the Cinema City network in Romania. Data is automatically refreshed every night.
+* **Movie Search:** Quickly find movies by title. (Further filters/search improvements coming soon!)
+* **Detailed Movie Pages:** Get runtime, description, showtimes, and all available formats (dubbed/subbed, languages, 3D, etc).
+* **Cinema Pages:** See all movies and all showtimes for each cinema, plus useful info.
+* **Responsive Modern UI:** Looks and works great on desktop and mobile.
+* **Automated E2E Testing:** Key user flows are covered with Playwright.
+* **Dev/Staging/Production environments:** Fully cloud-hosted with Vercel and Neon.
 
-## Learn More
+## Upcoming (WIP)
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+* **Seat Availability Tracking:**
+  My original inspiration—see at a glance how full a screening is. Planned as the next feature, opening up further possibilities like:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+  * Seat-based notifications
+  * “Find movies with available seats now” search
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+---
 
-## How do I deploy this?
+## Tech Stack
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+* **Frontend:** Next.js, React, TypeScript, TailwindCSS
+* **Backend:** Node.js (API routes), Prisma ORM, PostgreSQL (Neon)
+* **Testing:** Playwright (E2E)
+* **Hosting:** Vercel (dev/staging/prod), Neon (DB)
+
+---
+
+## Screenshots
+
+> *(Paste in 2–3 key screenshots or use those you sent above)*
+> ![Home Page](https://i.imgur.com/2sshnSg.jpeg)
+> ![Movie Details](https://i.imgur.com/lHvV7jb.png)
+> ![Cinema Page](https://i.imgur.com/CIao6WM.png)
+
+---
+
+## How it works
+
+Every night at 2 AM, MovieTime fetches showtime data from Cinema City Romania, parses the schedule, and updates the database automatically. Users can browse all current and upcoming movies, view showtimes by cinema, and quickly find info about films and locations—all from a single, user-friendly interface.
+
+---
+
+## Running Locally
+
+```bash
+git clone https://github.com/dekolor/filme
+cd filme
+npm install
+npm dev
+# Copy .env.example to .env and fill in your Neon/Postgres DB connection
+```
+
+---
+
+## Why I Built This
+
+> “Romanian moviegoers had to check multiple cinema websites to find showtimes and available seats. I wanted to simplify this by aggregating the info and making seat availability visible at a glance. The project became a full-stack learning journey—data scraping, API automation, database modeling, frontend UX, and robust testing.”
+

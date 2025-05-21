@@ -23,8 +23,7 @@ export default function MovieShowtimes({ movieId }: { movieId: string }) {
   }, [selectedCinema, cinemas]);
 
   return (
-    <div className="w-full space-y-6">
-      {/* Cinema Selection and Get Showtimes Button */}
+    <div data-testid="movie-showtimes" className="w-full space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="w-full sm:w-64">
           <Select value={selectedCinema} onValueChange={setSelectedCinema}>
@@ -42,7 +41,6 @@ export default function MovieShowtimes({ movieId }: { movieId: string }) {
         </div>
       </div>
 
-      {/* Showtimes Display */}
       <ShowtimeGrid movieId={movieId} cinemaId={selectedCinema} />
     </div>
   );
