@@ -71,6 +71,7 @@ export default function Movie({ movieId }: { movieId: string }) {
         <div className="md:w-1/3 lg:w-1/4">
           <div className="relative aspect-[2/3] overflow-hidden rounded-lg shadow-md">
             <Image
+              data-testid="movie-poster"
               src={imgSrc}
               alt={movie?.name ?? ""}
               fill
@@ -85,8 +86,8 @@ export default function Movie({ movieId }: { movieId: string }) {
 
         <div className="md:w-2/3 lg:w-3/4">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
-            <h1 className="text-3xl font-bold">{movie?.name}</h1>
-            <div className="flex items-center gap-2">
+            <h1 data-testid="movie-title" className="text-3xl font-bold">{movie?.name}</h1>
+            <div data-testid="movie-release-date-badge" className="flex items-center gap-2">
               <Badge variant="outline">
                 {DateTime.fromISO(movie!.releaseDate).toLocaleString(
                   DateTime.DATE_MED,
@@ -96,11 +97,11 @@ export default function Movie({ movieId }: { movieId: string }) {
           </div>
 
           <div className="text-muted-foreground mb-6 flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center">
+            <div data-testid="movie-length" className="flex items-center">
               <Clock className="mr-1 h-4 w-4" />
               {movie?.length} min
             </div>
-            <div className="flex items-center">
+            <div data-testid="movie-release-date" className="flex items-center">
               <Calendar className="mr-1 h-4 w-4" />
               {DateTime.fromISO(movie!.releaseDate).toLocaleString(
                 DateTime.DATE_MED,
@@ -108,7 +109,7 @@ export default function Movie({ movieId }: { movieId: string }) {
             </div>
           </div>
 
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div data-testid="movie-attributes" className="mb-6 flex flex-wrap gap-2">
             {movie?.attributeIds.map((genre) => (
               <Badge key={genre} variant="secondary">
                 {genre}
@@ -118,7 +119,7 @@ export default function Movie({ movieId }: { movieId: string }) {
 
           <div className="mb-6">
             <h2 className="mb-2 font-semibold">Description</h2>
-            <p>{movie?.description}</p>
+            <p data-testid="movie-description">{movie?.description}</p>
           </div>
 
           <h2 className="mb-6 text-2xl font-bold">Showtimes</h2>

@@ -71,7 +71,7 @@ export default function FeaturedMovies() {
   }
 
   return (
-    <section>
+    <section data-testid="featured-movies">
       <Tabs defaultValue="now-showing">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Movies</h2>
