@@ -17,7 +17,7 @@ model Cinema {
     link                  String
     imageUrl              String
     address               String
-    bookingUrl            String
+    bookingUrl            String?
     blockOnlineSales      Boolean   @default(false)
     blockOnlineSalesUntil DateTime?
     latitude              Float
