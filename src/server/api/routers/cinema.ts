@@ -12,7 +12,7 @@ export const cinemaRouter = createTRPCRouter({
           link: z.string(),
           imageUrl: z.string(),
           address: z.string(),
-          bookingUrl: z.string(),
+          bookingUrl: z.string().nullable(),
           blockOnlineSales: z.boolean(),
           blockOnlineSalesUntil: z.date().nullable(),
           latitude: z.number(),
