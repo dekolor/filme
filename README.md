@@ -8,36 +8,38 @@ A modern web app for discovering movies and showtimes at all Cinema City locatio
 
 ## Features
 
-- **Up-to-date Showtimes:** Fetches and displays current and upcoming movies for every cinema in the Cinema City network in Romania. Data is automatically refreshed every night.
-- **Movie Search:** Quickly find movies by title. (Further filters/search improvements coming soon!)
-- **Detailed Movie Pages:** Get runtime, description, showtimes, and all available formats (dubbed/subbed, languages, 3D, etc).
-- **Cinema Pages:** See all movies and all showtimes for each cinema, plus useful info.
-- **Responsive Modern UI:** Looks and works great on desktop and mobile.
-- **Automated E2E Testing:** Key user flows are covered with Playwright.
-- **Dev/Staging/Production environments:** Fully cloud-hosted with Vercel and Neon.
+* **Up-to-date Showtimes:** Fetches and displays current and upcoming movies for every cinema in the Cinema City network in Romania. Data is automatically refreshed every night.
+* **Movie Search:** Quickly find movies by title. (Further filters/search improvements coming soon!)
+* **Detailed Movie Pages:** Get runtime, description, showtimes, and all available formats (dubbed/subbed, languages, 3D, etc).
+* **Cinema Pages:** See all movies and all showtimes for each cinema, plus useful info.
+* **Responsive Modern UI:** Looks and works great on desktop and mobile.
+* **Automated E2E Testing:** Key user flows are covered with Playwright.
+* **Dev/Staging/Production environments:** Fully cloud-hosted with Vercel and Neon.
 
 ## Upcoming (WIP)
 
-- **Seat Availability Tracking:**
+* **Seat Availability Tracking:**
   My original inspiration—see at a glance how full a screening is. Planned as the next feature, opening up further possibilities like:
 
-  - Seat-based notifications
-  - “Find movies with available seats now” search
+  * Seat-based notifications
+  * “Find movies with available seats now” search
 
 ---
 
 ## Tech Stack
 
-- **Frontend:** Next.js, React, TypeScript, TailwindCSS
-- **Backend:** Node.js (API routes), Prisma ORM, PostgreSQL (Neon)
-- **Testing:** Playwright (E2E)
-- **Hosting:** Vercel (dev/staging/prod), Neon (DB)
+* **Frontend:** Next.js, React, TypeScript, TailwindCSS
+* **Backend:** Node.js (API routes), Prisma ORM, PostgreSQL (Neon)
+* **Testing:** Playwright (E2E)
+* **Hosting:** Vercel (dev/staging/prod), Neon (DB)
 
 ---
 
 ## Screenshots
 
-> ![Home Page](https://i.imgur.com/2sshnSg.jpeg) > ![Movie Details](https://i.imgur.com/lHvV7jb.png) > ![Cinema Page](https://i.imgur.com/CIao6WM.png)
+> ![Home Page](https://i.imgur.com/2sshnSg.jpeg)
+> ![Movie Details](https://i.imgur.com/lHvV7jb.png)
+> ![Cinema Page](https://i.imgur.com/CIao6WM.png)
 
 ---
 
@@ -62,3 +64,4 @@ npm dev
 ## Why I Built This
 
 > “Romanian moviegoers had to check multiple cinema websites to find showtimes and available seats. I wanted to simplify this by aggregating the info and making seat availability visible at a glance. The project became a full-stack learning journey—data scraping, API automation, database modeling, frontend UX, and robust testing.”
+
