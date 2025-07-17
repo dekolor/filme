@@ -11,6 +11,7 @@ const config = {
       { hostname: "*.cinemacity.ro" },
       { hostname: "picsum.photos" },
     ],
+    formats: ['image/webp', 'image/avif'],
   },
 };
 
