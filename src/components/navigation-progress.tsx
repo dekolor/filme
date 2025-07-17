@@ -9,14 +9,13 @@ export default function NavigationProgress() {
 
   useEffect(() => {
     NProgress.configure({ showSpinner: false });
-    
-    const handleComplete = () => NProgress.done();
-
-    handleComplete();
-
     return () => {
-      handleComplete();
+      NProgress.done();
     };
+  }, []);
+
+  useEffect(() => {
+    NProgress.done();
   }, [pathname]);
 
   return null;

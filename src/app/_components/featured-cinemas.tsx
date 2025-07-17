@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Cinema } from "@prisma/client";
 
 interface FeaturedCinemasProps {
-  cinemas: Cinema[];
+  cinemas: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'>[];
 }
 
 export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
