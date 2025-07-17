@@ -2,6 +2,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { cinemaRouter } from "./routers/cinema";
 import { movieRouter } from "./routers/movie";
 import { movieEventRouter } from "./routers/movieEvent";
+import { dashboardRouter } from "./routers/dashboard";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   cinema: cinemaRouter,
   movie: movieRouter,
   movieEvent: movieEventRouter,
+  dashboard: dashboardRouter,
 });
 
 // export type definition of API

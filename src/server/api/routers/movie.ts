@@ -36,7 +36,7 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const movies = ctx.db.movie.findMany({
+      const movies = await ctx.db.movie.findMany({
         skip: input.offset,
         take: input.limit,
         where: {
@@ -67,7 +67,7 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const movies = ctx.db.movie.findMany({
+      const movies = await ctx.db.movie.findMany({
         where: {
           releaseDate: {
             gt: new Date().toISOString(),
