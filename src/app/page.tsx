@@ -15,7 +15,7 @@ export default async function Home() {
     return (
       <HydrateClient>
         <div className="bg-background min-h-screen">
-          <header className="bg-secondary text-primary-foreground py-6">
+          <header className="py-6">
             <div className="container mx-auto px-4">
               <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                 <Link href="/" className="text-2xl font-bold">
@@ -98,7 +98,7 @@ export default async function Home() {
     console.error("Failed to load dashboard data:", error);
     return (
       <div className="bg-background min-h-screen">
-        <header className="bg-secondary text-primary-foreground py-6">
+        <header className="py-6">
           <div className="container mx-auto px-4">
             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
               <Link href="/" className="text-2xl font-bold">

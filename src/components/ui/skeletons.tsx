@@ -52,7 +52,7 @@ export function FeaturedMovieSkeleton() {
 
 export function HeaderSkeleton() {
   return (
-    <header className="bg-secondary text-primary-foreground py-6">
+    <header className="py-6">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="text-2xl font-bold">

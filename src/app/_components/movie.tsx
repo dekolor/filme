@@ -36,9 +36,9 @@ export default function Movie({ movieId }: { movieId: string }) {
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8 md:flex-row">
           <div className="md:w-1/3 lg:w-1/4">
-            <Skeleton className="relative aspect-[2/3] w-full rounded-lg shadow-md" />
+            <Skeleton className="aspect-[2/3] w-full rounded-lg shadow-md" />
           </div>
-          <div className="flex flex-col md:w-2/3 lg:w-3/4">
+          <div className="md:w-2/3 lg:w-3/4">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
               <Skeleton className="h-10 w-2/3 max-w-xs rounded" />
               <Skeleton className="h-8 w-28 rounded" />
