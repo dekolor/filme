@@ -1,90 +1,221 @@
+"use client";
+
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import FeaturedMovies from "~/app/_components/featured-movies";
-import { HydrateClient } from "~/trpc/server";
 import FeaturedCinemas from "./_components/featured-cinemas";
 import FeaturedMovie from "./_components/featured-movie";
-import { api } from "~/trpc/server";
+import { api } from "~/trpc/react";
+import { Skeleton } from "~/components/ui/skeleton";
 
-export default async function Home() {
-  const dashboardData = await api.dashboard.getData();
+function MovieCardSkeleton() {
+  return (
+    <div className="group overflow-hidden rounded-lg border bg-card">
+      <div className="relative aspect-[2/3] overflow-hidden">
+        <Skeleton className="absolute inset-0 h-full w-full" />
+        <Skeleton className="absolute top-2 left-2 h-6 w-20 rounded-md" />
+        <Skeleton className="absolute top-2 right-2 h-6 w-12 rounded-md" />
+      </div>
+      <div className="p-3">
+        <Skeleton className="mb-2 h-6 w-3/4 rounded" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-4 rounded-full" />
+          <Skeleton className="h-4 w-12 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CinemaCardSkeleton() {
+  return (
+    <div className="bg-card overflow-hidden rounded-lg shadow-md">
+      <Skeleton className="relative h-40 w-full" />
+      <div className="p-4">
+        <Skeleton className="mb-2 h-6 w-3/4 rounded" />
+        <Skeleton className="h-4 w-2/3 rounded" />
+      </div>
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="bg-background min-h-screen">
+      <header className="bg-secondarytext-primary-foreground py-6">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <div className="text-2xl font-bold">
+              MovieTime
+            </div>
+            <div className="flex w-full items-center gap-2 md:w-auto">
+              <div className="relative flex-1 md:w-80">
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Featured Movie Skeleton */}
+        <div className="bg-muted relative mb-10 flex h-[340px] items-center overflow-hidden rounded-xl">
+          <Skeleton className="absolute inset-0 scale-105 object-cover blur-md brightness-60" />
+          <div className="relative z-10 flex w-full flex-row items-center gap-6 px-6">
+            <Skeleton className="hidden h-[180px] w-[120px] rounded-xl shadow-xl md:block" />
+            <div className="flex max-w-lg flex-1 flex-col">
+              <Skeleton className="mb-2 h-6 w-24 rounded bg-white/10" />
+              <Skeleton className="mb-2 h-10 w-3/4 rounded" />
+              <Skeleton className="mb-4 h-4 w-full rounded" />
+              <Skeleton className="mb-1 h-4 w-5/6 rounded" />
+              <Skeleton className="mb-4 h-4 w-2/3 rounded" />
+              <Skeleton className="h-10 w-40 rounded" />
+            </div>
+          </div>
+        </div>
+
+        {/* Featured Movies Skeleton */}
+        <section>
+          <div className="mb-6 flex items-center justify-between">
+            <Skeleton className="h-8 w-32 rounded" />
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-24 rounded" />
+              <Skeleton className="h-8 w-24 rounded" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4">
+            <MovieCardSkeleton />
+            <MovieCardSkeleton />
+            <MovieCardSkeleton />
+            <MovieCardSkeleton />
+          </div>
+        </section>
+
+        {/* Featured Cinemas Skeleton */}
+        <section className="my-12">
+          <Skeleton className="mb-6 h-8 w-44 rounded" />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <CinemaCardSkeleton />
+            <CinemaCardSkeleton />
+            <CinemaCardSkeleton />
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-muted py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center justify-between md:flex-row">
+            <p className="text-muted-foreground">
+              © 2025 MovieTime. All rights reserved.
+            </p>
+            <div className="mt-4 flex gap-6 md:mt-0">
+              <Link
+                href="/about"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                About
+              </Link>
+              <Link
+                href="/contact"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Contact
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Privacy
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default function Home() {
+  const { data: dashboardData, isLoading } = api.dashboard.getData.useQuery();
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
-    <HydrateClient>
-      <div className="bg-background min-h-screen">
-        <header className="bg-secondarytext-primary-foreground py-6">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-              <Link href="/" className="text-2xl font-bold">
-                MovieTime
+    <div className="bg-background min-h-screen">
+      <header className="bg-secondarytext-primary-foreground py-6">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <Link href="/" className="text-2xl font-bold">
+              MovieTime
+            </Link>
+            <div className="flex w-full items-center gap-2 md:w-auto">
+              {/* <CitySelector /> */}
+              <form className="relative flex-1 md:w-80" action="/search">
+                <Input
+                  type="search"
+                  name="query"
+                  placeholder="Search for movies..."
+                  className="w-full pr-10"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  variant="ghost"
+                  className="absolute top-0 right-0 h-full"
+                >
+                  <Search className="h-4 w-4" />
+                  <span className="sr-only">Search</span>
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <FeaturedMovie movie={dashboardData?.featuredMovie ?? null} />
+
+        <FeaturedMovies 
+          movies={dashboardData?.movies ?? []} 
+          upcomingMovies={dashboardData?.upcomingMovies ?? []} 
+        />
+
+        <FeaturedCinemas cinemas={dashboardData?.cinemas ?? []} />
+      </main>
+
+      <footer className="bg-muted py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center justify-between md:flex-row">
+            <p className="text-muted-foreground">
+              © 2025 MovieTime. All rights reserved.
+            </p>
+            <div className="mt-4 flex gap-6 md:mt-0">
+              <Link
+                href="/about"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                About
               </Link>
-              <div className="flex w-full items-center gap-2 md:w-auto">
-                {/* <CitySelector /> */}
-                <form className="relative flex-1 md:w-80" action="/search">
-                  <Input
-                    type="search"
-                    name="query"
-                    placeholder="Search for movies..."
-                    className="w-full pr-10"
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    variant="ghost"
-                    className="absolute top-0 right-0 h-full"
-                  >
-                    <Search className="h-4 w-4" />
-                    <span className="sr-only">Search</span>
-                  </Button>
-                </form>
-              </div>
+              <Link
+                href="/contact"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Contact
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Privacy
+              </Link>
             </div>
           </div>
-        </header>
-
-        <main className="container mx-auto px-4 py-8">
-          <FeaturedMovie movie={dashboardData.featuredMovie} />
-
-          <FeaturedMovies 
-            movies={dashboardData.movies} 
-            upcomingMovies={dashboardData.upcomingMovies} 
-          />
-
-          <FeaturedCinemas cinemas={dashboardData.cinemas} />
-        </main>
-
-        <footer className="bg-muted py-8">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col items-center justify-between md:flex-row">
-              <p className="text-muted-foreground">
-                © 2025 MovieTime. All rights reserved.
-              </p>
-              <div className="mt-4 flex gap-6 md:mt-0">
-                <Link
-                  href="/about"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Contact
-                </Link>
-                <Link
-                  href="/privacy"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Privacy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
-    </HydrateClient>
+        </div>
+      </footer>
+    </div>
   );
 }
