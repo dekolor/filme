@@ -42,6 +42,9 @@ model Movie {
     tmdbPopularity Float?
 
     events MovieEvent[]
+
+    @@index([tmdbPopularity])
+    @@index([releaseDate])
 }
 
 model MovieEvent {
@@ -62,4 +65,5 @@ model MovieEvent {
 
     @@index([cinemaId])
     @@index([filmId])
+    @@index([businessDay])
 }

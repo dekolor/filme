@@ -1,47 +1,17 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { Skeleton } from "~/components/ui/skeleton";
-import { api } from "~/trpc/react";
+import type { Cinema } from "@prisma/client";
 
-function CinemaCardSkeleton() {
-  return (
-    <div className="bg-card overflow-hidden rounded-lg shadow-md">
-      <Skeleton className="relative h-40 w-full" />
-      <div className="p-4">
-        <Skeleton className="mb-2 h-6 w-3/4 rounded" />
-        <Skeleton className="h-4 w-2/3 rounded" />
-      </div>
-    </div>
-  );
+interface FeaturedCinemasProps {
+  cinemas: Cinema[];
 }
 
-function PopularCinemasSkeleton() {
-  return (
-    <section className="my-12">
-      <Skeleton className="mb-6 h-8 w-44 rounded" />
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <CinemaCardSkeleton />
-        <CinemaCardSkeleton />
-        <CinemaCardSkeleton />
-      </div>
-    </section>
-  );
-}
-
-export default function FeaturedCinemas() {
-  const { data: cinemas, isLoading } = api.cinema.getAll.useQuery(3);
-
-  if (isLoading) {
-    return <PopularCinemasSkeleton />;
-  }
-
+export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
   return (
     <section data-testid="featured-cinemas" className="my-12">
       <h2 className="mb-6 text-2xl font-bold">Popular Cinemas</h2>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {cinemas?.map((cinema) => (
+        {cinemas.map((cinema) => (
           <Link
             key={cinema.id}
             href={`/cinemas/${cinema.id}`}

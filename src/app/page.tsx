@@ -6,7 +6,11 @@ import FeaturedMovies from "~/app/_components/featured-movies";
 import { HydrateClient } from "~/trpc/server";
 import FeaturedCinemas from "./_components/featured-cinemas";
 import FeaturedMovie from "./_components/featured-movie";
-export default function Home() {
+import { api } from "~/trpc/server";
+
+export default async function Home() {
+  const dashboardData = await api.dashboard.getData();
+
   return (
     <HydrateClient>
       <div className="bg-background min-h-screen">
@@ -41,11 +45,14 @@ export default function Home() {
         </header>
 
         <main className="container mx-auto px-4 py-8">
-          <FeaturedMovie />
+          <FeaturedMovie movie={dashboardData.featuredMovie} />
 
-          <FeaturedMovies />
+          <FeaturedMovies 
+            movies={dashboardData.movies} 
+            upcomingMovies={dashboardData.upcomingMovies} 
+          />
 
-          <FeaturedCinemas />
+          <FeaturedCinemas cinemas={dashboardData.cinemas} />
         </main>
 
         <footer className="bg-muted py-8">
