@@ -22,5 +22,13 @@ jobs:
       - name: Merge dev into staging
         run: |
           git checkout staging || git checkout -b staging
-          git merge dev --no-ff -m "Auto-merge dev into staging"
-          git push origin staging
+          if git merge dev --no-ff -m "Auto-merge dev into staging"; then
+            git push origin staging
+            echo "✅ Successfully merged dev into staging"
+          else
+            echo "❌ Merge conflicts detected. Manual resolution required."
+            echo "Conflicts in the following files:"
+            git diff --name-only --diff-filter=U
+            git merge --abort
+            exit 1
+          fi
