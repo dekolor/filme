@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 const DASHBOARD_LIMITS = {
   MOVIES: 4,
   UPCOMING_MOVIES: 4,
-  CINEMAS: 3
+  CINEMAS: 20
 } as const;
 
 export const dashboardRouter = createTRPCRouter({
@@ -46,7 +46,8 @@ export const dashboardRouter = createTRPCRouter({
           displayName: true, 
           imageUrl: true 
         },
-        take: DASHBOARD_LIMITS.CINEMAS 
+        take: DASHBOARD_LIMITS.CINEMAS,
+        orderBy: { displayName: "asc" }
       }),
     ]);
 
