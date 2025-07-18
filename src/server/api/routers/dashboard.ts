@@ -45,8 +45,7 @@ export const dashboardRouter = createTRPCRouter({
           id: true, 
           displayName: true, 
           imageUrl: true 
-        },
-        take: DASHBOARD_LIMITS.CINEMAS 
+        }
       }),
     ]);
 
