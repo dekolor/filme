@@ -11,6 +11,10 @@ interface FeaturedCinemasProps {
   cinemas: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'>[];
 }
 
+const SCROLL_AMOUNT = 320;
+const SCROLL_ANIMATION_DELAY = 300;
+const SCROLL_THRESHOLD = 2;
+
 function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'> }) {
   const [imgSrc, setImgSrc] = useState(cinema.imageUrl);
   const [hasError, setHasError] = useState(false);
@@ -60,7 +64,7 @@ export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
     
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
     setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - SCROLL_THRESHOLD);
   };
 
   useEffect(() => {
@@ -70,9 +74,8 @@ export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
     
-    const scrollAmount = 320; // Approximate width of one card plus gap
     const newScrollLeft = scrollRef.current.scrollLeft + 
-      (direction === 'left' ? -scrollAmount : scrollAmount);
+      (direction === 'left' ? -SCROLL_AMOUNT : SCROLL_AMOUNT);
     
     scrollRef.current.scrollTo({
       left: newScrollLeft,
@@ -80,7 +83,7 @@ export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
     });
     
     // Check buttons after scroll animation
-    setTimeout(checkScrollButtons, 300);
+    setTimeout(checkScrollButtons, SCROLL_ANIMATION_DELAY);
   };
 
   return (
