@@ -37,7 +37,6 @@ A modern web app for discovering movies and showtimes at all Cinema City locatio
 
 ## Screenshots
 
-> *(Paste in 2–3 key screenshots or use those you sent above)*
 > ![Home Page](https://i.imgur.com/2sshnSg.jpeg)
 > ![Movie Details](https://i.imgur.com/lHvV7jb.png)
 > ![Cinema Page](https://i.imgur.com/CIao6WM.png)

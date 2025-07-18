@@ -36,7 +36,7 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const movies = ctx.db.movie.findMany({
+      const movies = await ctx.db.movie.findMany({
         skip: input.offset,
         take: input.limit,
         where: {
@@ -67,7 +67,7 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const movies = ctx.db.movie.findMany({
+      const movies = await ctx.db.movie.findMany({
         where: {
           releaseDate: {
             gt: new Date().toISOString(),
@@ -87,8 +87,22 @@ export const movieRouter = createTRPCRouter({
   }),
 
   search: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    // Split search term into words and filter out empty strings
+    const searchWords = input.trim().split(/\s+/).filter(word => word.length > 0);
+    
+    if (searchWords.length === 0) {
+      return [];
+    }
+    
+    // Create AND conditions for each word to match anywhere in the movie name
+    const whereConditions = searchWords.map(word => ({
+      name: { contains: word, mode: "insensitive" as const }
+    }));
+    
     return ctx.db.movie.findMany({
-      where: { name: { contains: input, mode: "insensitive" } },
+      where: {
+        AND: whereConditions
+      },
     });
   }),
 });
