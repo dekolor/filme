@@ -9,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
 import { useLocation } from "~/hooks/use-location";
 import LocationPermissionToast from "./location-permission-dialog";
+import { LOCATION_CONFIG } from "~/lib/location-config";
 
 // Hook for debouncing location updates
 function useDebouncedLocation(location: { latitude: number; longitude: number } | null, delay: number) {
@@ -34,7 +35,7 @@ interface FeaturedCinemasProps {
 const SCROLL_AMOUNT = 320;
 const SCROLL_ANIMATION_DELAY = 300;
 const SCROLL_THRESHOLD = 2;
-const LOCATION_DEBOUNCE_DELAY = 500; // 500ms debounce for location updates
+// Using debounce delay from config
 const PLACEHOLDER_IMAGE = "/noposter.png"; // Use existing placeholder instead of API
 
 function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'> & { distance?: number } }) {
@@ -87,10 +88,10 @@ export default function FeaturedCinemas({ cinemas: staticCinemas }: FeaturedCine
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const { location, isInitialized, requestLocation } = useLocation();
+  const { location, isInitialized, requestLocation, isLoading: locationLoading, error: locationError } = useLocation();
 
   // Debounce location updates to prevent excessive API calls
-  const debouncedLocation = useDebouncedLocation(location, LOCATION_DEBOUNCE_DELAY);
+  const debouncedLocation = useDebouncedLocation(location, LOCATION_CONFIG.DEBOUNCE_DELAY);
 
   // Fetch cinemas with location-based sorting
   const { data: locationSortedCinemas } = api.cinema.getAll.useQuery(
@@ -141,9 +142,19 @@ export default function FeaturedCinemas({ cinemas: staticCinemas }: FeaturedCine
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold">
           All Cinemas
-          {location && (
+          {locationLoading && (
+            <span className="ml-2 text-sm font-normal text-gray-500">
+              (getting location...)
+            </span>
+          )}
+          {location && !locationLoading && (
             <span className="ml-2 text-sm font-normal text-gray-500">
               (sorted by distance)
+            </span>
+          )}
+          {locationError && (
+            <span className="ml-2 text-sm font-normal text-red-500">
+              (location unavailable)
             </span>
           )}
         </h2>

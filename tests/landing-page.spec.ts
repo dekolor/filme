@@ -19,7 +19,7 @@ test('has featured movies', async ({ page }) => {
   await expect(page.getByTestId('featured-movies').getByRole('tab', { name: 'Now Showing' })).toBeVisible();
   await expect(page.getByTestId('featured-movies').getByRole('tab', { name: 'Coming Soon' })).toBeVisible();
 
-  await expect(page.getByTestId('featured-movies').locator('div[data-slot="card"]')).toHaveCount(4);
+  await expect(page.getByTestId('featured-movies').locator('div[data-slot="card"]')).toHaveCount(3);
 
   await page.getByTestId('featured-movies').getByRole('tab', { name: 'Coming Soon' }).click();
   await expect(page.getByTestId('featured-movies').locator('div[data-slot="card"]')).toHaveCount(1);

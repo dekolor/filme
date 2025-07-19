@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { z } from "zod";
+import { LOCATION_CONFIG } from "~/lib/location-config";
 
 // Zod schemas for validation
 const LocationSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
-  source: z.enum(["gps", "ip", "none"]),
+  source: z.enum(["gps", "ip", "none"] as const),
 });
 
 const IPApiResponseSchema = z.object({
@@ -19,12 +20,9 @@ const IPApiResponseSchema = z.object({
 
 type Location = z.infer<typeof LocationSchema>;
 
-// Constants
-const GPS_TIMEOUT = 10000;
-const LOCATION_CACHE_AGE = 300000; // 5 minutes
+// Fallback location
 const BUCHAREST_FALLBACK = {
-  latitude: 44.4268,
-  longitude: 26.1025,
+  ...LOCATION_CONFIG.FALLBACK_COORDINATES,
   source: "ip" as const,
 };
 
@@ -35,6 +33,8 @@ interface UseLocationReturn {
   requestLocation: (allowGPS: boolean) => Promise<void>;
   hasLocationPermission: boolean;
   isInitialized: boolean;
+  clearError: () => void;
+  resetLocation: () => void;
 }
 
 export function useLocation(): UseLocationReturn {
@@ -46,7 +46,7 @@ export function useLocation(): UseLocationReturn {
 
   // Load location from localStorage on mount
   useEffect(() => {
-    const savedLocation = localStorage.getItem("userLocation");
+    const savedLocation = localStorage.getItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION);
     if (savedLocation) {
       try {
         const parsed: unknown = JSON.parse(savedLocation);
@@ -55,7 +55,7 @@ export function useLocation(): UseLocationReturn {
         setHasLocationPermission(true);
       } catch (e) {
         console.warn("Invalid location data in localStorage, removing:", e);
-        localStorage.removeItem("userLocation");
+        localStorage.removeItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION);
       }
     }
     setIsInitialized(true);
@@ -64,11 +64,17 @@ export function useLocation(): UseLocationReturn {
   const getIPLocation = async (): Promise<Location> => {
     try {
       // Using ipapi.co which provides free IP geolocation
-      const response = await fetch("https://ipapi.co/json/", {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), LOCATION_CONFIG.IP_LOCATION_TIMEOUT);
+      
+      const response = await fetch(LOCATION_CONFIG.IP_LOCATION_API_URL, {
         headers: {
           'Accept': 'application/json',
         },
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`IP location service returned ${response.status}`);
@@ -81,7 +87,7 @@ export function useLocation(): UseLocationReturn {
       
       // Check for API errors
       if (validatedData.error) {
-        throw new Error(`IP API error: ${validatedData.reason ?? 'Unknown error'}`);
+        throw new Error(`${LOCATION_CONFIG.ERROR_MESSAGES.INVALID_RESPONSE}: ${validatedData.reason ?? 'Unknown error'}`);
       }
       
       return {
@@ -112,24 +118,24 @@ export function useLocation(): UseLocationReturn {
           });
         },
         (error) => {
-          let errorMessage = "Location access denied";
+          let errorMessage: string = LOCATION_CONFIG.ERROR_MESSAGES.PERMISSION_DENIED;
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              errorMessage = "Location access denied";
+              errorMessage = LOCATION_CONFIG.ERROR_MESSAGES.PERMISSION_DENIED;
               break;
             case error.POSITION_UNAVAILABLE:
-              errorMessage = "Location information unavailable";
+              errorMessage = LOCATION_CONFIG.ERROR_MESSAGES.POSITION_UNAVAILABLE;
               break;
             case error.TIMEOUT:
-              errorMessage = "Location request timed out";
+              errorMessage = LOCATION_CONFIG.ERROR_MESSAGES.TIMEOUT;
               break;
           }
           reject(new Error(errorMessage));
         },
         {
-          enableHighAccuracy: true,
-          timeout: GPS_TIMEOUT,
-          maximumAge: LOCATION_CACHE_AGE,
+          enableHighAccuracy: LOCATION_CONFIG.GPS_HIGH_ACCURACY,
+          timeout: LOCATION_CONFIG.GPS_TIMEOUT,
+          maximumAge: LOCATION_CONFIG.LOCATION_CACHE_AGE,
         }
       );
     });
@@ -155,7 +161,7 @@ export function useLocation(): UseLocationReturn {
 
       setLocation(newLocation);
       setHasLocationPermission(true);
-      localStorage.setItem("userLocation", JSON.stringify(newLocation));
+      localStorage.setItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION, JSON.stringify(newLocation));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to get location";
       setError(errorMessage);
@@ -165,6 +171,18 @@ export function useLocation(): UseLocationReturn {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  const resetLocation = useCallback(() => {
+    setLocation(null);
+    setHasLocationPermission(false);
+    setError(null);
+    localStorage.removeItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION);
+    localStorage.removeItem(LOCATION_CONFIG.STORAGE_KEYS.PERMISSION_ASKED);
+  }, []);
+
   return {
     location,
     isLoading,
@@ -172,5 +190,7 @@ export function useLocation(): UseLocationReturn {
     requestLocation,
     hasLocationPermission,
     isInitialized,
+    clearError,
+    resetLocation,
   };
 }

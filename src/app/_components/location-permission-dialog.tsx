@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapPin, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { LOCATION_CONFIG } from "~/lib/location-config";
 
 interface LocationPermissionToastProps {
   onLocationPermission: (granted: boolean) => void;
@@ -12,42 +13,43 @@ export default function LocationPermissionToast({
   onLocationPermission,
 }: LocationPermissionToastProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Check if we've already asked for permission
-    const hasAskedForLocation = localStorage.getItem("locationPermissionAsked");
-    const hasUserLocation = localStorage.getItem("userLocation");
+    const hasAskedForLocation = localStorage.getItem(LOCATION_CONFIG.STORAGE_KEYS.PERMISSION_ASKED);
+    const hasUserLocation = localStorage.getItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION);
     
     if (!hasAskedForLocation && !hasUserLocation) {
       // Show toast after a shorter delay
-      const timer = setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         setIsVisible(true);
-      }, 1500);
-      
-      // Cleanup function to clear timer on unmount
-      return () => {
-        clearTimeout(timer);
-      };
+      }, LOCATION_CONFIG.PERMISSION_DIALOG_DELAY);
     }
     
-    // Return undefined when no timer is set
-    return undefined;
+    // Cleanup function to clear timer on unmount
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, []);
 
   const handleAllow = () => {
-    localStorage.setItem("locationPermissionAsked", "true");
+    localStorage.setItem(LOCATION_CONFIG.STORAGE_KEYS.PERMISSION_ASKED, "true");
     setIsVisible(false);
     onLocationPermission(true);
   };
 
   const handleDeny = () => {
-    localStorage.setItem("locationPermissionAsked", "true");
+    localStorage.setItem(LOCATION_CONFIG.STORAGE_KEYS.PERMISSION_ASKED, "true");
     setIsVisible(false);
     onLocationPermission(false);
   };
 
   const handleDismiss = () => {
-    localStorage.setItem("locationPermissionAsked", "true");
+    localStorage.setItem(LOCATION_CONFIG.STORAGE_KEYS.PERMISSION_ASKED, "true");
     setIsVisible(false);
     onLocationPermission(false);
   };
@@ -55,23 +57,29 @@ export default function LocationPermissionToast({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-2 fade-in duration-300">
+    <div 
+      className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-2 fade-in duration-300"
+      role="dialog"
+      aria-labelledby="location-permission-title"
+      aria-describedby="location-permission-description"
+    >
       <div className="bg-black border border-gray-800 rounded-lg shadow-lg p-4">
         <div className="flex items-start gap-3">
           <MapPin className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p id="location-permission-title" className="text-sm font-medium text-white">
                   Sort cinemas by distance?
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p id="location-permission-description" className="text-xs text-gray-400 mt-1">
                   We&apos;ll show you nearby cinemas first
                 </p>
               </div>
               <button
                 onClick={handleDismiss}
                 className="text-gray-500 hover:text-gray-300 ml-2"
+                aria-label="Dismiss location permission dialog"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -81,6 +89,7 @@ export default function LocationPermissionToast({
                 size="sm" 
                 onClick={handleAllow}
                 className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 text-xs font-medium"
+                aria-label="Allow location access to sort cinemas by distance"
               >
                 Allow
               </Button>
@@ -89,6 +98,7 @@ export default function LocationPermissionToast({
                 variant="outline" 
                 onClick={handleDeny}
                 className="border-gray-700 text-gray-300 hover:bg-gray-800 px-3 py-1 text-xs"
+                aria-label="Deny location access"
               >
                 Not now
               </Button>

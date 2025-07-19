@@ -16,7 +16,7 @@ test('has basic info', async ({ page }) => {
 
 test('has showtimes', async ({ page }) => {
   await expect(page.getByTestId('movie-showtimes')).toBeVisible();
-  await expect(page.getByTestId('movie-showtimes').getByRole('button', { name: DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd')})).toBeVisible();
+  await expect(page.getByTestId('movie-showtimes').getByRole('button', { name: 'Tomorrow' })).toBeVisible();
 
   await expect(page.getByTestId('movie-showtimes').locator('div[data-slot="card"]')).toHaveCount(1);
 });
