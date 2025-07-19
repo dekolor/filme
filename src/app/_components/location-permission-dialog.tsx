@@ -23,8 +23,15 @@ export default function LocationPermissionToast({
       const timer = setTimeout(() => {
         setIsVisible(true);
       }, 1500);
-      return () => clearTimeout(timer);
+      
+      // Cleanup function to clear timer on unmount
+      return () => {
+        clearTimeout(timer);
+      };
     }
+    
+    // Return undefined when no timer is set
+    return undefined;
   }, []);
 
   const handleAllow = () => {
@@ -59,7 +66,7 @@ export default function LocationPermissionToast({
                   Sort cinemas by distance?
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  We'll show you nearby cinemas first
+                  We&apos;ll show you nearby cinemas first
                 </p>
               </div>
               <button

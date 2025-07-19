@@ -16,7 +16,7 @@ import { useLocation } from "~/hooks/use-location";
 export default function Movie({ movieId }: { movieId: string }) {
   const { data: movie, isLoading } = api.movie.getById.useQuery(movieId);
   const [imgSrc, setImgSrc] = useState("/noposter.png");
-  const { requestLocation, isInitialized } = useLocation();
+  const { requestLocation } = useLocation();
 
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function Movie({ movieId }: { movieId: string }) {
       
       <LocationPermissionToast 
         onLocationPermission={(granted) => {
-          requestLocation(granted);
+          void requestLocation(granted);
         }}
       />
     </main>

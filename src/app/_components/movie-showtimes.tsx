@@ -11,16 +11,20 @@ import {
 import { api } from "~/trpc/react";
 import ShowtimeGrid from "./showtime-grid";
 import { useLocation } from "~/hooks/use-location";
+import type { Cinema } from "@prisma/client";
+
+// Type for cinema with optional distance
+type CinemaWithDistance = Cinema & { distance?: number };
 
 export default function MovieShowtimes({ movieId, movieLink }: { movieId: string; movieLink?: string }) {
   const [selectedCinema, setSelectedCinema] = useState<string>("");
-  const { location, isInitialized } = useLocation();
+  const { location } = useLocation();
 
   const { data: cinemas } = api.cinema.getByMovieId.useQuery({
     movieId,
     userLat: location?.latitude ?? undefined,
     userLon: location?.longitude ?? undefined,
-  });
+  }) as { data: CinemaWithDistance[] | undefined };
 
   useEffect(() => {
     if (selectedCinema === "" && cinemas) {
@@ -40,7 +44,7 @@ export default function MovieShowtimes({ movieId, movieLink }: { movieId: string
               {cinemas?.map((cinema) => (
                 <SelectItem key={cinema.id} value={cinema.id.toString()}>
                   {cinema.displayName}
-                  {"distance" in cinema && (
+                  {cinema.distance !== undefined && (
                     <span className="text-gray-500 ml-2">
                       ({cinema.distance} km)
                     </span>

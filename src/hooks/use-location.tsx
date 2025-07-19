@@ -1,12 +1,32 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { z } from "zod";
 
-interface Location {
-  latitude: number;
-  longitude: number;
-  source: "gps" | "ip" | "none";
-}
+// Zod schemas for validation
+const LocationSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  source: z.enum(["gps", "ip", "none"]),
+});
+
+const IPApiResponseSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+  error: z.boolean().optional(),
+  reason: z.string().optional(),
+});
+
+type Location = z.infer<typeof LocationSchema>;
+
+// Constants
+const GPS_TIMEOUT = 10000;
+const LOCATION_CACHE_AGE = 300000; // 5 minutes
+const BUCHAREST_FALLBACK = {
+  latitude: 44.4268,
+  longitude: 26.1025,
+  source: "ip" as const,
+};
 
 interface UseLocationReturn {
   location: Location | null;
@@ -29,10 +49,12 @@ export function useLocation(): UseLocationReturn {
     const savedLocation = localStorage.getItem("userLocation");
     if (savedLocation) {
       try {
-        const parsed = JSON.parse(savedLocation) as Location;
-        setLocation(parsed);
+        const parsed: unknown = JSON.parse(savedLocation);
+        const validatedLocation = LocationSchema.parse(parsed);
+        setLocation(validatedLocation);
         setHasLocationPermission(true);
       } catch (e) {
+        console.warn("Invalid location data in localStorage, removing:", e);
         localStorage.removeItem("userLocation");
       }
     }
@@ -42,26 +64,35 @@ export function useLocation(): UseLocationReturn {
   const getIPLocation = async (): Promise<Location> => {
     try {
       // Using ipapi.co which provides free IP geolocation
-      const response = await fetch("https://ipapi.co/json/");
-      if (!response.ok) throw new Error("IP location service unavailable");
+      const response = await fetch("https://ipapi.co/json/", {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
       
-      const data = await response.json();
-      if (data.latitude && data.longitude) {
-        return {
-          latitude: data.latitude,
-          longitude: data.longitude,
-          source: "ip",
-        };
+      if (!response.ok) {
+        throw new Error(`IP location service returned ${response.status}`);
       }
-      throw new Error("Invalid IP location data");
+      
+      const data: unknown = await response.json();
+      
+      // Validate the response data
+      const validatedData = IPApiResponseSchema.parse(data);
+      
+      // Check for API errors
+      if (validatedData.error) {
+        throw new Error(`IP API error: ${validatedData.reason ?? 'Unknown error'}`);
+      }
+      
+      return {
+        latitude: validatedData.latitude,
+        longitude: validatedData.longitude,
+        source: "ip",
+      };
     } catch (error) {
       // Fallback to Bucharest, Romania coordinates if IP location fails
       console.warn("IP location failed, using fallback:", error);
-      return {
-        latitude: 44.4268,
-        longitude: 26.1025,
-        source: "ip",
-      };
+      return BUCHAREST_FALLBACK;
     }
   };
 
@@ -97,8 +128,8 @@ export function useLocation(): UseLocationReturn {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000, // 5 minutes
+          timeout: GPS_TIMEOUT,
+          maximumAge: LOCATION_CACHE_AGE,
         }
       );
     });

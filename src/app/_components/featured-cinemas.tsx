@@ -2,13 +2,30 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Cinema } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
 import { useLocation } from "~/hooks/use-location";
 import LocationPermissionToast from "./location-permission-dialog";
+
+// Hook for debouncing location updates
+function useDebouncedLocation(location: { latitude: number; longitude: number } | null, delay: number) {
+  const [debouncedLocation, setDebouncedLocation] = useState(location);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedLocation(location);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [location, delay]);
+
+  return debouncedLocation;
+}
 
 interface FeaturedCinemasProps {
   cinemas?: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'>[];
@@ -17,6 +34,8 @@ interface FeaturedCinemasProps {
 const SCROLL_AMOUNT = 320;
 const SCROLL_ANIMATION_DELAY = 300;
 const SCROLL_THRESHOLD = 2;
+const LOCATION_DEBOUNCE_DELAY = 500; // 500ms debounce for location updates
+const PLACEHOLDER_IMAGE = "/noposter.png"; // Use existing placeholder instead of API
 
 function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'> & { distance?: number } }) {
   const [imgSrc, setImgSrc] = useState(cinema.imageUrl);
@@ -25,8 +44,8 @@ function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'i
   const handleImageError = () => {
     if (!hasError) {
       setHasError(true);
-      // Fallback to a placeholder or default image
-      setImgSrc('/api/placeholder/400/160');
+      // Fallback to existing placeholder image
+      setImgSrc(PLACEHOLDER_IMAGE);
     }
   };
 
@@ -70,20 +89,25 @@ export default function FeaturedCinemas({ cinemas: staticCinemas }: FeaturedCine
   const [canScrollRight, setCanScrollRight] = useState(true);
   const { location, isInitialized, requestLocation } = useLocation();
 
+  // Debounce location updates to prevent excessive API calls
+  const debouncedLocation = useDebouncedLocation(location, LOCATION_DEBOUNCE_DELAY);
+
   // Fetch cinemas with location-based sorting
   const { data: locationSortedCinemas } = api.cinema.getAll.useQuery(
     {
       limit: 20,
-      userLat: location?.latitude,
-      userLon: location?.longitude,
+      userLat: debouncedLocation?.latitude,
+      userLon: debouncedLocation?.longitude,
     },
     {
-      enabled: isInitialized && !!location,
+      enabled: isInitialized && !!debouncedLocation,
     }
   );
 
   // Use location-sorted cinemas if available, otherwise fallback to static
-  const cinemas = locationSortedCinemas || staticCinemas || [];
+  const cinemas = useMemo(() => {
+    return locationSortedCinemas ?? staticCinemas ?? [];
+  }, [locationSortedCinemas, staticCinemas]);
 
   const checkScrollButtons = () => {
     if (!scrollRef.current) return;
@@ -160,7 +184,7 @@ export default function FeaturedCinemas({ cinemas: staticCinemas }: FeaturedCine
       
       <LocationPermissionToast 
         onLocationPermission={(granted) => {
-          requestLocation(granted);
+          void requestLocation(granted);
         }}
       />
     </section>
