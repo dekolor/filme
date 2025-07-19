@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { sortCinemasByDistance } from "~/lib/distance";
 
 export const cinemaRouter = createTRPCRouter({
   create: publicProcedure
@@ -28,9 +29,20 @@ export const cinemaRouter = createTRPCRouter({
     }),
 
   getAll: publicProcedure
-    .input(z.number().optional())
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        userLat: z.number().optional(),
+        userLon: z.number().optional(),
+      }).optional()
+    )
     .query(async ({ ctx, input }) => {
-      const cinemas = await ctx.db.cinema.findMany({ take: input });
+      const cinemas = await ctx.db.cinema.findMany({ take: input?.limit });
+
+      // Sort by distance if user location is provided
+      if (input?.userLat && input?.userLon) {
+        return sortCinemasByDistance(cinemas, input.userLat, input.userLon);
+      }
 
       return cinemas;
     }),
@@ -44,13 +56,32 @@ export const cinemaRouter = createTRPCRouter({
   }),
 
   getByMovieId: publicProcedure
-    .input(z.string())
+    .input(
+      z.union([
+        z.string(), // backward compatibility
+        z.object({
+          movieId: z.string(),
+          userLat: z.number().optional(),
+          userLon: z.number().optional(),
+        })
+      ])
+    )
     .query(async ({ ctx, input }) => {
+      // Handle both old string format and new object format
+      const movieId = typeof input === 'string' ? input : input.movieId;
+      const userLat = typeof input === 'object' ? input.userLat : undefined;
+      const userLon = typeof input === 'object' ? input.userLon : undefined;
+
       const cinemas = await ctx.db.cinema.findMany({
         where: {
-          events: { some: { Movie: { id: input } } },
+          events: { some: { Movie: { id: movieId } } },
         },
       });
+
+      // Sort by distance if user location is provided
+      if (userLat && userLon) {
+        return sortCinemasByDistance(cinemas, userLat, userLon);
+      }
 
       return cinemas;
     }),

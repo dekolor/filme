@@ -19,7 +19,8 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "playwright test --config=playwright.config.ts"
+    "test": "playwright test --config=playwright.config.ts",
+    "fetch-data": "npx tsx src/scripts/fetchData.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",

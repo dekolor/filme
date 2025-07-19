@@ -10,14 +10,14 @@ import { useState, useEffect } from "react";
 
 import MovieShowtimes from "./movie-showtimes";
 import { Skeleton } from "~/components/ui/skeleton";
+import LocationPermissionToast from "./location-permission-dialog";
+import { useLocation } from "~/hooks/use-location";
 
 export default function Movie({ movieId }: { movieId: string }) {
-  const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null);
   const { data: movie, isLoading } = api.movie.getById.useQuery(movieId);
   const [imgSrc, setImgSrc] = useState("/noposter.png");
+  const { requestLocation, isInitialized } = useLocation();
 
-  const { data: cinemas, isLoading: cinemasLoading } =
-    api.cinema.getByMovieId.useQuery(movieId);
 
   useEffect(() => {
     if (movie?.posterLink) {
@@ -25,13 +25,7 @@ export default function Movie({ movieId }: { movieId: string }) {
     }
   }, [movie?.posterLink]);
 
-  useEffect(() => {
-    if (!selectedCinemaId) {
-      setSelectedCinemaId(Number(cinemas?.[0]?.id));
-    }
-  }, [selectedCinemaId, cinemas]);
-
-  if (isLoading || cinemasLoading) {
+  if (isLoading) {
     return (
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8 md:flex-row">
@@ -124,9 +118,15 @@ export default function Movie({ movieId }: { movieId: string }) {
 
           <h2 className="mb-6 text-2xl font-bold">Showtimes</h2>
 
-          <MovieShowtimes movieId={movieId} />
+          <MovieShowtimes movieId={movieId} movieLink={movie?.link} />
         </div>
       </div>
+      
+      <LocationPermissionToast 
+        onLocationPermission={(granted) => {
+          requestLocation(granted);
+        }}
+      />
     </main>
   );
 }

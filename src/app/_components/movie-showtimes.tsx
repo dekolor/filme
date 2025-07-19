@@ -10,11 +10,17 @@ import {
 } from "~/components/ui/select";
 import { api } from "~/trpc/react";
 import ShowtimeGrid from "./showtime-grid";
+import { useLocation } from "~/hooks/use-location";
 
-export default function MovieShowtimes({ movieId }: { movieId: string }) {
+export default function MovieShowtimes({ movieId, movieLink }: { movieId: string; movieLink?: string }) {
   const [selectedCinema, setSelectedCinema] = useState<string>("");
+  const { location, isInitialized } = useLocation();
 
-  const { data: cinemas } = api.cinema.getByMovieId.useQuery(movieId);
+  const { data: cinemas } = api.cinema.getByMovieId.useQuery({
+    movieId,
+    userLat: location?.latitude ?? undefined,
+    userLon: location?.longitude ?? undefined,
+  });
 
   useEffect(() => {
     if (selectedCinema === "" && cinemas) {
@@ -34,6 +40,11 @@ export default function MovieShowtimes({ movieId }: { movieId: string }) {
               {cinemas?.map((cinema) => (
                 <SelectItem key={cinema.id} value={cinema.id.toString()}>
                   {cinema.displayName}
+                  {"distance" in cinema && (
+                    <span className="text-gray-500 ml-2">
+                      ({cinema.distance} km)
+                    </span>
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -41,7 +52,7 @@ export default function MovieShowtimes({ movieId }: { movieId: string }) {
         </div>
       </div>
 
-      <ShowtimeGrid movieId={movieId} cinemaId={selectedCinema} />
+      <ShowtimeGrid movieId={movieId} cinemaId={selectedCinema} movieLink={movieLink} />
     </div>
   );
 }
