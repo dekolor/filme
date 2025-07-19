@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { z } from "zod";
 import { LOCATION_CONFIG } from "~/lib/location-config";
 
+// Simple request deduplication cache
+const pendingRequests = new Map<string, Promise<Location>>();
+
 // Zod schemas for validation
 const LocationSchema = z.object({
   latitude: z.number().min(-90).max(90),
@@ -62,40 +65,82 @@ export function useLocation(): UseLocationReturn {
   }, []);
 
   const getIPLocation = async (): Promise<Location> => {
+    const requestKey = 'ip-location';
+    
+    // Check if there's already a pending request
+    if (pendingRequests.has(requestKey)) {
+      console.log("Deduplicating IP location request");
+      return pendingRequests.get(requestKey)!;
+    }
+
     try {
-      // Using ipapi.co which provides free IP geolocation
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), LOCATION_CONFIG.IP_LOCATION_TIMEOUT);
-      
-      const response = await fetch(LOCATION_CONFIG.IP_LOCATION_API_URL, {
-        headers: {
-          'Accept': 'application/json',
-        },
-        signal: controller.signal,
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`IP location service returned ${response.status}`);
+      // Check rate limiting
+      const lastRequest = localStorage.getItem(LOCATION_CONFIG.STORAGE_KEYS.LAST_IP_REQUEST);
+      if (lastRequest) {
+        const timeSinceLastRequest = Date.now() - parseInt(lastRequest, 10);
+        if (timeSinceLastRequest < LOCATION_CONFIG.IP_LOCATION_RATE_LIMIT_MS) {
+          console.warn("IP location request rate limited, using fallback");
+          return BUCHAREST_FALLBACK;
+        }
       }
+
+      // Create the request promise and add it to cache
+      const requestPromise = (async (): Promise<Location> => {
+        try {
+          // Using ipapi.co which provides free IP geolocation
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), LOCATION_CONFIG.IP_LOCATION_TIMEOUT);
+          
+          const response = await fetch(LOCATION_CONFIG.IP_LOCATION_API_URL, {
+            headers: {
+              'Accept': 'application/json',
+            },
+            signal: controller.signal,
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            throw new Error(`IP location service returned ${response.status}`);
+          }
+
+          // Check response size
+          const contentLength = response.headers.get('content-length');
+          if (contentLength && parseInt(contentLength, 10) > LOCATION_CONFIG.IP_LOCATION_MAX_RESPONSE_SIZE) {
+            throw new Error('Response too large');
+          }
+          
+          const data: unknown = await response.json();
+          
+          // Store request timestamp for rate limiting
+          localStorage.setItem(LOCATION_CONFIG.STORAGE_KEYS.LAST_IP_REQUEST, Date.now().toString());
+          
+          // Validate the response data
+          const validatedData = IPApiResponseSchema.parse(data);
+          
+          // Check for API errors
+          if (validatedData.error) {
+            throw new Error(`${LOCATION_CONFIG.ERROR_MESSAGES.INVALID_RESPONSE}: ${validatedData.reason ?? 'Unknown error'}`);
+          }
+          
+          return {
+            latitude: validatedData.latitude,
+            longitude: validatedData.longitude,
+            source: "ip",
+          };
+        } finally {
+          // Always clean up the pending request from cache
+          pendingRequests.delete(requestKey);
+        }
+      })();
+
+      // Add to cache
+      pendingRequests.set(requestKey, requestPromise);
       
-      const data: unknown = await response.json();
-      
-      // Validate the response data
-      const validatedData = IPApiResponseSchema.parse(data);
-      
-      // Check for API errors
-      if (validatedData.error) {
-        throw new Error(`${LOCATION_CONFIG.ERROR_MESSAGES.INVALID_RESPONSE}: ${validatedData.reason ?? 'Unknown error'}`);
-      }
-      
-      return {
-        latitude: validatedData.latitude,
-        longitude: validatedData.longitude,
-        source: "ip",
-      };
+      return await requestPromise;
     } catch (error) {
+      // Clean up cache on error
+      pendingRequests.delete(requestKey);
       // Fallback to Bucharest, Romania coordinates if IP location fails
       console.warn("IP location failed, using fallback:", error);
       return BUCHAREST_FALLBACK;

@@ -62,6 +62,7 @@ export default function LocationPermissionToast({
       role="dialog"
       aria-labelledby="location-permission-title"
       aria-describedby="location-permission-description"
+      aria-live="polite"
     >
       <div className="bg-black border border-gray-800 rounded-lg shadow-lg p-4">
         <div className="flex items-start gap-3">

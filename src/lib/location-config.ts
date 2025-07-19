@@ -20,11 +20,14 @@ export const LOCATION_CONFIG = {
   // API settings
   IP_LOCATION_TIMEOUT: 5000, // 5 seconds
   IP_LOCATION_API_URL: 'https://ipapi.co/json/',
+  IP_LOCATION_MAX_RESPONSE_SIZE: 1024 * 10, // 10KB max response
+  IP_LOCATION_RATE_LIMIT_MS: 60000, // 1 minute between requests
 
   // Local storage keys
   STORAGE_KEYS: {
     USER_LOCATION: 'userLocation',
     PERMISSION_ASKED: 'locationPermissionAsked',
+    LAST_IP_REQUEST: 'lastIpLocationRequest',
   },
 
   // Error messages
