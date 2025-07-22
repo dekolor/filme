@@ -8,12 +8,13 @@ const DASHBOARD_LIMITS = {
 
 export const dashboardRouter = createTRPCRouter({
   getData: publicProcedure.query(async ({ ctx }) => {
-    const now = new Date().toISOString();
+    const now = new Date().toISOString().slice(0, 10);
     
     const [featuredMovie, movies, upcomingMovies, cinemas] = await Promise.all([
       ctx.db.movie.findFirst({
         where: { 
           description: { not: null },
+          releaseDate: { lte: now },
           events: {
             some: {
               businessDay: { gte: now },
@@ -24,6 +25,7 @@ export const dashboardRouter = createTRPCRouter({
       }),
       ctx.db.movie.findMany({
         where: {
+          releaseDate: { lte: now },
           events: {
             some: {
               businessDay: { gte: now },

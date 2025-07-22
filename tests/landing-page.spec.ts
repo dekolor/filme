@@ -19,7 +19,7 @@ test('has featured movies', async ({ page }) => {
   await expect(page.getByTestId('featured-movies').getByRole('tab', { name: 'Now Showing' })).toBeVisible();
   await expect(page.getByTestId('featured-movies').getByRole('tab', { name: 'Coming Soon' })).toBeVisible();
 
-  await expect(page.getByTestId('featured-movies').locator('div[data-slot="card"]')).toHaveCount(4);
+  await expect(page.getByTestId('featured-movies').locator('div[data-slot="card"]')).toHaveCount(3);
 
   await page.getByTestId('featured-movies').getByRole('tab', { name: 'Coming Soon' }).click();
   await expect(page.getByTestId('featured-movies').locator('div[data-slot="card"]')).toHaveCount(1);
@@ -116,11 +116,10 @@ test('cinema displays shows maximum 20 cinemas', async ({ page }) => {
 test('clicking on cinema card navigates to cinema page', async ({ page }) => {
   const firstCinema = page.getByTestId('featured-cinemas').getByTestId('featured-cinema').first();
   
-  // Get the cinema ID from the href attribute
-  const cinemaLink = firstCinema.locator('a');
-  const href = await cinemaLink.getAttribute('href');
+  // Get the cinema ID from the href attribute - the cinema card itself is the link
+  const href = await firstCinema.getAttribute('href');
   
-  await cinemaLink.click();
+  await firstCinema.click();
   await expect(page).toHaveURL(href!);
 });
 
