@@ -42,19 +42,19 @@ test.describe('Cinema Carousel', () => {
     await expect(firstCinema.locator('img')).toBeVisible();
     await expect(firstCinema.locator('h3')).toBeVisible();
     await expect(firstCinema.locator('p')).toBeVisible();
-    await expect(firstCinema.locator('a')).toBeVisible();
+    // Cinema card itself should be clickable (wrapped in Link component)
+    await expect(firstCinema).toBeVisible();
   });
 
   test('cinema cards are clickable and navigate correctly', async ({ page }) => {
     const firstCinema = page.getByTestId('featured-cinemas').getByTestId('featured-cinema').first();
     
-    // Get the cinema ID from the href attribute
-    const cinemaLink = firstCinema.locator('a');
-    const href = await cinemaLink.getAttribute('href');
+    // Get the cinema ID from the href attribute - the cinema card itself is the link
+    const href = await firstCinema.getAttribute('href');
     
     expect(href).toMatch(/\/cinemas\/\d+/);
     
-    await cinemaLink.click();
+    await firstCinema.click();
     await expect(page).toHaveURL(href!);
   });
 

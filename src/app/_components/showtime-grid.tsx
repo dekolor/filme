@@ -13,9 +13,11 @@ import { DateTime } from "luxon";
 export default function ShowtimeGrid({
   movieId,
   cinemaId,
+  movieLink,
 }: {
   movieId: string;
   cinemaId: string;
+  movieLink?: string;
 }) {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [showtimes, setShowtimes] = useState<MovieEvent[] | null>(null);
@@ -51,17 +53,37 @@ export default function ShowtimeGrid({
     <div className="animate-in fade-in space-y-6 duration-300">
       {/* Date Selection */}
       <div className="flex flex-wrap gap-2">
-        {availableDates.map((date) => (
-          <Button
-            key={date}
-            variant={selectedDate === date ? "default" : "outline"}
-            onClick={() => setSelectedDate(date)}
-            className="flex items-center gap-2"
-          >
-            <Calendar className="h-4 w-4" />
-            {date}
-          </Button>
-        ))}
+        {availableDates.map((date) => {
+          const today = DateTime.now().toFormat("yyyy-MM-dd");
+          const tomorrow = DateTime.now().plus({ days: 1 }).toFormat("yyyy-MM-dd");
+          
+          let displayText = date;
+          let customClasses = "";
+          
+          if (date === today) {
+            displayText = "Today";
+            customClasses = selectedDate === date 
+              ? "border-yellow-500 bg-yellow-500 text-black hover:bg-yellow-600" 
+              : "border-yellow-500 text-yellow-500 hover:bg-yellow-500/10";
+          } else if (date === tomorrow) {
+            displayText = "Tomorrow";
+            customClasses = selectedDate === date
+              ? "border-purple-500 bg-purple-500 text-white hover:bg-purple-600"
+              : "border-purple-500 text-purple-500 hover:bg-purple-500/10";
+          }
+          
+          return (
+            <Button
+              key={date}
+              variant={selectedDate === date ? "default" : "outline"}
+              onClick={() => setSelectedDate(date)}
+              className={`flex items-center gap-2 ${customClasses}`}
+            >
+              <Calendar className="h-4 w-4" />
+              {displayText}
+            </Button>
+          );
+        })}
       </div>
 
       {/* Loading State */}
@@ -96,12 +118,15 @@ export default function ShowtimeGrid({
                               "d MMM, HH:mm ",
                             )}
                           </div>
-                          <Badge
-                            variant="outline"
-                            className="bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                          >
-                            Many Seats Available
-                          </Badge>
+                          {/* TODO: Add seat availability badge when seat data is available */}
+                          {false && (
+                            <Badge
+                              variant="outline"
+                              className="bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                            >
+                              Many Seats Available
+                            </Badge>
+                          )}
                         </div>
 
                         <div className="mb-2 flex items-center gap-2 text-gray-400">
@@ -114,7 +139,7 @@ export default function ShowtimeGrid({
                             variant={"outline"}
                             className="text-primary w-full"
                             onClick={() => {
-                              window.open(showtime.bookingLink, "_blank");
+                              window.open(movieLink, "_blank");
                             }}
                           >
                             Book Tickets

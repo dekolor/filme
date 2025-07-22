@@ -2,28 +2,51 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Cinema } from "@prisma/client";
 import { Button } from "~/components/ui/button";
+import { api } from "~/trpc/react";
+import { useLocation } from "~/hooks/use-location";
+import LocationPermissionToast from "./location-permission-dialog";
+import { LOCATION_CONFIG } from "~/lib/location-config";
+
+// Hook for debouncing location updates
+function useDebouncedLocation(location: { latitude: number; longitude: number } | null, delay: number) {
+  const [debouncedLocation, setDebouncedLocation] = useState(location);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedLocation(location);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [location, delay]);
+
+  return debouncedLocation;
+}
 
 interface FeaturedCinemasProps {
-  cinemas: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'>[];
+  cinemas?: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'>[];
 }
 
 const SCROLL_AMOUNT = 320;
 const SCROLL_ANIMATION_DELAY = 300;
 const SCROLL_THRESHOLD = 2;
+// Using debounce delay from config
+const PLACEHOLDER_IMAGE = "/noposter.png"; // Use existing placeholder instead of API
 
-function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'> }) {
+function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'imageUrl'> & { distance?: number } }) {
   const [imgSrc, setImgSrc] = useState(cinema.imageUrl);
   const [hasError, setHasError] = useState(false);
 
   const handleImageError = () => {
     if (!hasError) {
       setHasError(true);
-      // Fallback to a placeholder or default image
-      setImgSrc('/api/placeholder/400/160');
+      // Fallback to existing placeholder image
+      setImgSrc(PLACEHOLDER_IMAGE);
     }
   };
 
@@ -44,7 +67,14 @@ function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'i
           />
         </div>
         <div className="p-4">
-          <h3 className="text-lg font-semibold">{cinema.displayName}</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">{cinema.displayName}</h3>
+            {cinema.distance && (
+              <span className="text-sm text-blue-500 font-medium">
+                {cinema.distance} km
+              </span>
+            )}
+          </div>
           <p className="text-muted-foreground text-sm">
             Multiple screens • Concessions • Parking available
           </p>
@@ -54,10 +84,31 @@ function CinemaCard({ cinema }: { cinema: Pick<Cinema, 'id' | 'displayName' | 'i
   );
 }
 
-export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
+export default function FeaturedCinemas({ cinemas: staticCinemas }: FeaturedCinemasProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const { location, isInitialized, requestLocation, isLoading: locationLoading, error: locationError } = useLocation();
+
+  // Debounce location updates to prevent excessive API calls
+  const debouncedLocation = useDebouncedLocation(location, LOCATION_CONFIG.DEBOUNCE_DELAY);
+
+  // Fetch cinemas with location-based sorting
+  const { data: locationSortedCinemas } = api.cinema.getAll.useQuery(
+    {
+      limit: 20,
+      userLat: debouncedLocation?.latitude,
+      userLon: debouncedLocation?.longitude,
+    },
+    {
+      enabled: isInitialized && !!debouncedLocation,
+    }
+  );
+
+  // Use location-sorted cinemas if available, otherwise fallback to static
+  const cinemas = useMemo(() => {
+    return locationSortedCinemas ?? staticCinemas ?? [];
+  }, [locationSortedCinemas, staticCinemas]);
 
   const checkScrollButtons = () => {
     if (!scrollRef.current) return;
@@ -89,7 +140,24 @@ export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
   return (
     <section data-testid="featured-cinemas" className="my-12">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">All Cinemas</h2>
+        <h2 className="text-2xl font-bold">
+          All Cinemas
+          {locationLoading && (
+            <span className="ml-2 text-sm font-normal text-gray-500">
+              (getting location...)
+            </span>
+          )}
+          {location && !locationLoading && (
+            <span className="ml-2 text-sm font-normal text-gray-500">
+              (sorted by distance)
+            </span>
+          )}
+          {locationError && (
+            <span className="ml-2 text-sm font-normal text-red-500">
+              (location unavailable)
+            </span>
+          )}
+        </h2>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -124,6 +192,12 @@ export default function FeaturedCinemas({ cinemas }: FeaturedCinemasProps) {
           </div>
         ))}
       </div>
+      
+      <LocationPermissionToast 
+        onLocationPermission={(granted) => {
+          void requestLocation(granted);
+        }}
+      />
     </section>
   );
 }

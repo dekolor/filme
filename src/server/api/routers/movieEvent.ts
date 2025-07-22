@@ -32,12 +32,13 @@ export const movieEventRouter = createTRPCRouter({
   getByCinemaIdAndMovieId: publicProcedure
     .input(z.object({ cinemaId: z.number().optional(), movieId: z.string() }))
     .query(async ({ ctx, input }) => {
+      const today = DateTime.now().toFormat("yyyy-MM-dd");
       return ctx.db.movieEvent.findMany({
         where: {
           cinemaId: input.cinemaId,
           filmId: input.movieId,
           businessDay: {
-            gte: new Date().toISOString(),
+            gte: today,
           },
         },
         include: { Cinema: true },

@@ -60,6 +60,8 @@ async function main() {
   const now = new Date();
   const oneWeekLater = new Date(now);
   oneWeekLater.setDate(now.getDate() + 7);
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
 
   // movies
   await prisma.movie.createMany({
@@ -72,8 +74,8 @@ async function main() {
         videoLink: null,
         link: "https://example.com/movies/mov1",
         weight: 1,
-        releaseYear: "2024",
-        releaseDate: "2024-11-15",
+        releaseYear: String(yesterday.getFullYear()),
+        releaseDate: isoDate(yesterday),
         attributeIds: ["2D", "EN"],
         imdbId: "tt1234567",
         description: "A thrilling story of an AI side-kick.",
@@ -87,8 +89,8 @@ async function main() {
         videoLink: "https://youtube.com/watch?v=abcd1234",
         link: "https://example.com/movies/mov2",
         weight: 2,
-        releaseYear: "2023",
-        releaseDate: "2023-10-01",
+        releaseYear: String(yesterday.getFullYear()),
+        releaseDate: isoDate(yesterday),
         attributeIds: ["2D", "RO"],
         imdbId: "tt7654321",
         description: "Mystery thriller set in futuristic Bucharest.",
@@ -102,8 +104,8 @@ async function main() {
         videoLink: null,
         link: "https://example.com/movies/mov3",
         weight: 3,
-        releaseYear: "2025",
-        releaseDate: "2025-02-14",
+        releaseYear: String(yesterday.getFullYear()),
+        releaseDate: isoDate(yesterday),
         attributeIds: ["3D", "EN"],
         imdbId: null,
         description: "A quirky comedy about a developer lost in code.",
