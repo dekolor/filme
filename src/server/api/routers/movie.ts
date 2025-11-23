@@ -21,7 +21,10 @@ export const movieRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.movie.createMany({
-        data: input,
+        data: input.map((movie) => ({
+          ...movie,
+          attributeIds: JSON.stringify(movie.attributeIds),
+        })),
         skipDuplicates: true,
       });
     }),
@@ -55,7 +58,10 @@ export const movieRouter = createTRPCRouter({
           tmdbPopularity: input.orderByPopularity,
         },
       });
-      return movies;
+      return movies.map((movie) => ({
+        ...movie,
+        attributeIds: JSON.parse(movie.attributeIds) as string[],
+      }));
     }),
 
   getAllUpcoming: publicProcedure
@@ -79,30 +85,44 @@ export const movieRouter = createTRPCRouter({
           tmdbPopularity: input.orderByPopularity,
         },
       });
-      return movies;
+      return movies.map((movie) => ({
+        ...movie,
+        attributeIds: JSON.parse(movie.attributeIds) as string[],
+      }));
     }),
 
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    return ctx.db.movie.findUnique({ where: { id: input } });
+    const movie = await ctx.db.movie.findUnique({ where: { id: input } });
+    if (!movie) return null;
+    return {
+      ...movie,
+      attributeIds: JSON.parse(movie.attributeIds) as string[],
+    };
   }),
 
   search: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     // Split search term into words and filter out empty strings
     const searchWords = input.trim().split(/\s+/).filter(word => word.length > 0);
-    
+
     if (searchWords.length === 0) {
       return [];
     }
-    
-    // Create AND conditions for each word to match anywhere in the movie name
+
+    // SQLite doesn't support case-insensitive mode like PostgreSQL
+    // Use contains without mode for SQLite compatibility
     const whereConditions = searchWords.map(word => ({
-      name: { contains: word, mode: "insensitive" as const }
+      name: { contains: word }
     }));
-    
-    return ctx.db.movie.findMany({
+
+    const movies = await ctx.db.movie.findMany({
       where: {
         AND: whereConditions
       },
     });
+
+    return movies.map((movie) => ({
+      ...movie,
+      attributeIds: JSON.parse(movie.attributeIds) as string[],
+    }));
   }),
 });

@@ -31,10 +31,14 @@ const fetchMovies = async () => {
       longitude: cinema.longitude,
     }));
 
-    await prisma.cinema.createMany({
-      data: cinemaDataToCreate,
-      skipDuplicates: true,
-    });
+    // Use upsert for SQLite compatibility (skipDuplicates not supported)
+    for (const cinema of cinemaDataToCreate) {
+      await prisma.cinema.upsert({
+        where: { id: cinema.id },
+        update: cinema,
+        create: cinema,
+      });
+    }
 
     for (const cinema of cinemas) {
       const datesResponse = await axios.get(
@@ -50,14 +54,19 @@ const fetchMovies = async () => {
 
         const moviesForDate = eventsForDateResponse.data.body.films as Movie[];
 
-        const moviesForDateToCreate = moviesForDate.map((movie: Movie) => ({
+        const moviesForDateToCreate = moviesForDate.map((movie: any) => ({
           ...movie,
+          attributeIds: JSON.stringify(movie.attributeIds),
         }));
 
-        await prisma.movie.createMany({
-          data: moviesForDateToCreate,
-          skipDuplicates: true,
-        });
+        // Use upsert for SQLite compatibility
+        for (const movie of moviesForDateToCreate) {
+          await prisma.movie.upsert({
+            where: { id: movie.id },
+            update: movie,
+            create: movie,
+          });
+        }
 
         const eventsForDate = eventsForDateResponse.data.body
           .events as MovieEvent[];
@@ -70,7 +79,7 @@ const fetchMovies = async () => {
               cinemaId: Number(event.cinemaId),
               businessDay: event.businessDay,
               eventDateTime: event.eventDateTime,
-              attributes: event.attributeIds,
+              attributes: JSON.stringify(event.attributeIds),
               bookingLink: event.bookingLink,
               secondaryBookingLink: event.secondaryBookingLink ?? "",
               presentationCode: event.presentationCode,
@@ -80,10 +89,14 @@ const fetchMovies = async () => {
             }) as MovieEvent,
         );
 
-        await prisma.movieEvent.createMany({
-          data: eventsForDateToCreate,
-          skipDuplicates: true,
-        });
+        // Use upsert for SQLite compatibility
+        for (const event of eventsForDateToCreate) {
+          await prisma.movieEvent.upsert({
+            where: { id: event.id },
+            update: event,
+            create: event,
+          });
+        }
       }
     }
 
@@ -94,50 +107,64 @@ const fetchMovies = async () => {
 };
 
 const fetchTmdbData = async () => {
+  if (!process.env.TMDB_API_KEY) {
+    console.log("TMDB_API_KEY not set, skipping TMDB enrichment");
+    return;
+  }
+
+  console.log("Fetching TMDB data for enrichment...");
   const movies = await prisma.movie.findMany();
 
   for (const movie of movies) {
-    const tmdbIdRequestData = await axios.get(
-      `https://api.themoviedb.org/3/search/movie?query=${movie.name}&include_adult=false&language=en-US&page=1`,
-      {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
+    try {
+      const tmdbIdRequestData = await axios.get(
+        `https://api.themoviedb.org/3/search/movie?query=${movie.name}&include_adult=false&language=en-US&page=1`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
+          },
         },
-      },
-    );
+      );
 
-    if (tmdbIdRequestData.data.results.length === 0) {
-      console.log(`No results found for movie ${movie.name}`);
-      continue;
+      if (tmdbIdRequestData.data.results.length === 0) {
+        console.log(`No TMDB results found for movie ${movie.name}`);
+        continue;
+      }
+
+      const tmdbMovieId = tmdbIdRequestData.data.results[0].id;
+
+      const tmdbMovieRequestData = await axios.get(
+        `https://api.themoviedb.org/3/movie/${tmdbMovieId}?language=en-US`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
+          },
+        },
+      );
+
+      const tmdbMovie = tmdbMovieRequestData.data;
+
+      await prisma.movie.update({
+        where: { id: movie.id },
+        data: {
+          imdbId: tmdbMovie.imdb_id,
+          description: tmdbMovie.overview,
+          tmdbPopularity: tmdbMovie.popularity,
+        },
+      });
+
+      console.log(`✓ Enriched ${movie.name} with TMDB data`);
+    } catch (error) {
+      console.log(`Failed to fetch TMDB data for ${movie.name}:`, error instanceof Error ? error.message : 'Unknown error');
     }
-
-    const tmdbMovieId = tmdbIdRequestData.data.results[0].id;
-
-    const tmdbMovieRequestData = await axios.get(
-      `https://api.themoviedb.org/3/movie/${tmdbMovieId}?language=en-US`,
-      {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
-        },
-      },
-    );
-
-    const tmdbMovie = tmdbMovieRequestData.data;
-
-    await prisma.movie.update({
-      where: { id: movie.id },
-      data: {
-        imdbId: tmdbMovie.imdb_id,
-        description: tmdbMovie.overview,
-        tmdbPopularity: tmdbMovie.popularity,
-      },
-    });
   }
 };
 
 await fetchMovies();
-await fetchTmdbData();
+await fetchTmdbData().catch((error) => {
+  console.error("TMDB enrichment failed, but Cinema City data was fetched successfully:", error);
+});

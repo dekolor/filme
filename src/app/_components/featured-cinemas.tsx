@@ -10,6 +10,7 @@ import { api } from "~/trpc/react";
 import { useLocation } from "~/hooks/use-location";
 import LocationPermissionToast from "./location-permission-dialog";
 import { LOCATION_CONFIG } from "~/lib/location-config";
+import { CinemaEmptyState } from "~/components/empty-state";
 
 // Hook for debouncing location updates
 function useDebouncedLocation(location: { latitude: number; longitude: number } | null, delay: number) {
@@ -180,18 +181,22 @@ export default function FeaturedCinemas({ cinemas: staticCinemas }: FeaturedCine
         </div>
       </div>
       
-      <div 
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide"
-        onScroll={checkScrollButtons}
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {cinemas.map((cinema) => (
-          <div key={cinema.id} className="flex-shrink-0 w-80">
-            <CinemaCard cinema={cinema} />
-          </div>
-        ))}
-      </div>
+      {cinemas.length === 0 ? (
+        <CinemaEmptyState />
+      ) : (
+        <div
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide"
+          onScroll={checkScrollButtons}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {cinemas.map((cinema) => (
+            <div key={cinema.id} className="flex-shrink-0 w-80">
+              <CinemaCard cinema={cinema} />
+            </div>
+          ))}
+        </div>
+      )}
       
       <LocationPermissionToast 
         onLocationPermission={(granted) => {

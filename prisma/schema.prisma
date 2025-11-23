@@ -36,7 +36,7 @@ model Movie {
     weight         Int
     releaseYear    String?
     releaseDate    String
-    attributeIds   String[]
+    attributeIds   String
     imdbId         String?
     description    String?
     tmdbPopularity Float?
@@ -54,7 +54,7 @@ model MovieEvent {
     cinemaId             Int
     businessDay          String
     eventDateTime        String
-    attributes           String[]
+    attributes           String
     bookingLink          String
     secondaryBookingLink String?
     presentationCode     String
