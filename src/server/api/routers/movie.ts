@@ -161,10 +161,9 @@ export const movieRouter = createTRPCRouter({
       return [];
     }
 
-    // SQLite doesn't support case-insensitive mode like PostgreSQL
-    // Use contains without mode for SQLite compatibility
+    // Use case-insensitive search for PostgreSQL
     const whereConditions = searchWords.map((word) => ({
-      name: { contains: word },
+      name: { contains: word, mode: "insensitive" as const },
     }));
 
     const movies = await ctx.db.movie.findMany({

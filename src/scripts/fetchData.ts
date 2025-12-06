@@ -94,22 +94,30 @@ const fetchMovies = async () => {
               // Collect unique movies
               for (const movie of movies) {
                 if (!allMovies.has(movie.id)) {
+                  const attributeIds = (movie as any).attributeIds;
                   allMovies.set(movie.id, {
                     ...movie,
-                    attributeIds: JSON.stringify((movie as any).attributeIds),
+                    attributeIds:
+                      typeof attributeIds === "string"
+                        ? attributeIds
+                        : JSON.stringify(attributeIds),
                   });
                 }
               }
 
               // Collect all events
               for (const event of events) {
+                const eventAttributeIds = (event as any).attributeIds;
                 allEvents.set((event as any).id, {
                   id: (event as any).id,
                   filmId: (event as any).filmId,
                   cinemaId: Number((event as any).cinemaId),
                   businessDay: (event as any).businessDay,
                   eventDateTime: (event as any).eventDateTime,
-                  attributes: JSON.stringify((event as any).attributeIds),
+                  attributes:
+                    typeof eventAttributeIds === "string"
+                      ? eventAttributeIds
+                      : JSON.stringify(eventAttributeIds),
                   bookingLink: (event as any).bookingLink,
                   secondaryBookingLink:
                     (event as any).secondaryBookingLink ?? "",
