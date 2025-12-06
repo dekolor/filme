@@ -22,6 +22,21 @@ export const cinemaRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
+      // SQLite doesn't support skipDuplicates, so we handle it conditionally
+      const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+      if (isSQLite) {
+        // For SQLite, insert one by one and ignore conflicts
+        let count = 0;
+        for (const cinema of input) {
+          try {
+            await ctx.db.cinema.create({ data: cinema });
+            count++;
+          } catch {
+            // Ignore duplicate key errors
+          }
+        }
+        return { count };
+      }
       return ctx.db.cinema.createMany({
         data: input,
         skipDuplicates: true,
@@ -30,11 +45,13 @@ export const cinemaRouter = createTRPCRouter({
 
   getAll: publicProcedure
     .input(
-      z.object({
-        limit: z.number().optional(),
-        userLat: z.number().optional(),
-        userLon: z.number().optional(),
-      }).optional()
+      z
+        .object({
+          limit: z.number().optional(),
+          userLat: z.number().optional(),
+          userLon: z.number().optional(),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const cinemas = await ctx.db.cinema.findMany({ take: input?.limit });
@@ -63,14 +80,14 @@ export const cinemaRouter = createTRPCRouter({
           movieId: z.string(),
           userLat: z.number().optional(),
           userLon: z.number().optional(),
-        })
-      ])
+        }),
+      ]),
     )
     .query(async ({ ctx, input }) => {
       // Handle both old string format and new object format
-      const movieId = typeof input === 'string' ? input : input.movieId;
-      const userLat = typeof input === 'object' ? input.userLat : undefined;
-      const userLon = typeof input === 'object' ? input.userLon : undefined;
+      const movieId = typeof input === "string" ? input : input.movieId;
+      const userLat = typeof input === "object" ? input.userLat : undefined;
+      const userLon = typeof input === "object" ? input.userLon : undefined;
 
       const cinemas = await ctx.db.cinema.findMany({
         where: {

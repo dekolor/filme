@@ -62,11 +62,27 @@ export const movieRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
+      const data = input.map((movie) => ({
+        ...movie,
+        attributeIds: JSON.stringify(movie.attributeIds),
+      }));
+      // SQLite doesn't support skipDuplicates, so we handle it conditionally
+      const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+      if (isSQLite) {
+        // For SQLite, insert one by one and ignore conflicts
+        let count = 0;
+        for (const movie of data) {
+          try {
+            await ctx.db.movie.create({ data: movie });
+            count++;
+          } catch {
+            // Ignore duplicate key errors
+          }
+        }
+        return { count };
+      }
       return ctx.db.movie.createMany({
-        data: input.map((movie) => ({
-          ...movie,
-          attributeIds: JSON.stringify(movie.attributeIds),
-        })),
+        data,
         skipDuplicates: true,
       });
     }),
@@ -161,9 +177,14 @@ export const movieRouter = createTRPCRouter({
       return [];
     }
 
-    // Use case-insensitive search for PostgreSQL
+    // Check if we're using SQLite (doesn't support mode: "insensitive")
+    const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+
+    // Build where conditions based on database type
     const whereConditions = searchWords.map((word) => ({
-      name: { contains: word, mode: "insensitive" as const },
+      name: isSQLite
+        ? { contains: word }
+        : { contains: word, mode: "insensitive" as const },
     }));
 
     const movies = await ctx.db.movie.findMany({
@@ -172,7 +193,16 @@ export const movieRouter = createTRPCRouter({
       },
     });
 
-    const parsedMovies = movies.map((movie) => ({
+    // For SQLite, filter results case-insensitively in JavaScript
+    const filteredMovies = isSQLite
+      ? movies.filter((movie) =>
+          searchWords.every((word) =>
+            movie.name.toLowerCase().includes(word.toLowerCase()),
+          ),
+        )
+      : movies;
+
+    const parsedMovies = filteredMovies.map((movie) => ({
       ...movie,
       attributeIds: JSON.parse(movie.attributeIds) as string[],
     }));

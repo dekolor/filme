@@ -23,11 +23,27 @@ export const movieEventRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
+      const data = input.map((event) => ({
+        ...event,
+        attributes: JSON.stringify(event.attributes),
+      }));
+      // SQLite doesn't support skipDuplicates, so we handle it conditionally
+      const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+      if (isSQLite) {
+        // For SQLite, insert one by one and ignore conflicts
+        let count = 0;
+        for (const event of data) {
+          try {
+            await ctx.db.movieEvent.create({ data: event });
+            count++;
+          } catch {
+            // Ignore duplicate key errors
+          }
+        }
+        return { count };
+      }
       return ctx.db.movieEvent.createMany({
-        data: input.map((event) => ({
-          ...event,
-          attributes: JSON.stringify(event.attributes),
-        })),
+        data,
         skipDuplicates: true,
       });
     }),
