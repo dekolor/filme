@@ -28,9 +28,14 @@ async function main() {
     unlinkSync(journalPath);
   }
 
+  // Generate Prisma client with SQLite schema for test environment
+  console.log("📦 Generating Prisma client with test schema...");
+  execSync(`npx prisma generate --schema=prisma/schema.test.prisma`, {
+    stdio: "inherit",
+    env: { ...process.env, DATABASE_URL: TEST_DB_URL },
+  });
+
   // Push schema to test database
-  // Note: We skip generate to keep the PostgreSQL Prisma client intact
-  // The routers handle SQLite differences at runtime
   console.log("🏗️  Pushing schema to test database...");
   execSync(
     `npx prisma db push --schema=prisma/schema.test.prisma --skip-generate --accept-data-loss`,
