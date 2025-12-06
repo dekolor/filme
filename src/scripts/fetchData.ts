@@ -95,23 +95,42 @@ const fetchMovies = async () => {
               for (const movie of movies) {
                 if (!allMovies.has(movie.id)) {
                   const attributeIds = (movie as any).attributeIds;
-                  // Ensure attributeIds is always stored as a JSON string array
+
+                  /**
+                   * Normalize attributeIds to always be a JSON string array.
+                   * Cinema City API may return this field in different formats:
+                   * - As a JSON string array: '["attr1","attr2"]'
+                   * - As a JavaScript array: ["attr1","attr2"]
+                   * - As undefined/null/other types
+                   */
                   let attributeIdsStr: string;
+
                   if (typeof attributeIds === "string") {
-                    // Validate it's a valid JSON array string
+                    // API returned a string - validate it's valid JSON array
                     try {
                       const parsed = JSON.parse(attributeIds);
-                      attributeIdsStr = Array.isArray(parsed)
-                        ? attributeIds
-                        : JSON.stringify([]);
-                    } catch {
+                      if (Array.isArray(parsed)) {
+                        attributeIdsStr = attributeIds;
+                      } else {
+                        console.warn(`Movie ${movie.id}: attributeIds is a string but not a JSON array. Got:`, typeof parsed);
+                        attributeIdsStr = JSON.stringify([]);
+                      }
+                    } catch (error) {
+                      console.warn(`Movie ${movie.id}: attributeIds is a malformed JSON string. Error:`, error);
                       attributeIdsStr = JSON.stringify([]);
                     }
                   } else if (Array.isArray(attributeIds)) {
+                    // API returned a JavaScript array - stringify it
                     attributeIdsStr = JSON.stringify(attributeIds);
+                  } else if (attributeIds === undefined || attributeIds === null) {
+                    // API didn't provide attributeIds - use empty array
+                    attributeIdsStr = JSON.stringify([]);
                   } else {
+                    // Unexpected type - log warning and use empty array
+                    console.warn(`Movie ${movie.id}: attributeIds has unexpected type:`, typeof attributeIds, attributeIds);
                     attributeIdsStr = JSON.stringify([]);
                   }
+
                   allMovies.set(movie.id, {
                     ...movie,
                     attributeIds: attributeIdsStr,
