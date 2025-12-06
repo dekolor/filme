@@ -72,6 +72,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       DATABASE_URL: TEST_DB_URL,
+      SKIP_ENV_VALIDATION: "1",
     },
   },
 });

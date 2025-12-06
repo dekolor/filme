@@ -11,6 +11,8 @@ jobs:
     env:
       CRON_SECRET: test-secret
       VERCEL_PROTECTION_BYPASS: test-bypass
+      TMDB_API_KEY: test-tmdb-key
+      SKIP_ENV_VALIDATION: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
