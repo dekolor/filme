@@ -95,12 +95,26 @@ const fetchMovies = async () => {
               for (const movie of movies) {
                 if (!allMovies.has(movie.id)) {
                   const attributeIds = (movie as any).attributeIds;
+                  // Ensure attributeIds is always stored as a JSON string array
+                  let attributeIdsStr: string;
+                  if (typeof attributeIds === "string") {
+                    // Validate it's a valid JSON array string
+                    try {
+                      const parsed = JSON.parse(attributeIds);
+                      attributeIdsStr = Array.isArray(parsed)
+                        ? attributeIds
+                        : JSON.stringify([]);
+                    } catch {
+                      attributeIdsStr = JSON.stringify([]);
+                    }
+                  } else if (Array.isArray(attributeIds)) {
+                    attributeIdsStr = JSON.stringify(attributeIds);
+                  } else {
+                    attributeIdsStr = JSON.stringify([]);
+                  }
                   allMovies.set(movie.id, {
                     ...movie,
-                    attributeIds:
-                      typeof attributeIds === "string"
-                        ? attributeIds
-                        : JSON.stringify(attributeIds),
+                    attributeIds: attributeIdsStr,
                   });
                 }
               }
@@ -108,16 +122,29 @@ const fetchMovies = async () => {
               // Collect all events
               for (const event of events) {
                 const eventAttributeIds = (event as any).attributeIds;
+                // Ensure attributes is always stored as a JSON string array
+                let attributesStr: string;
+                if (typeof eventAttributeIds === "string") {
+                  try {
+                    const parsed = JSON.parse(eventAttributeIds);
+                    attributesStr = Array.isArray(parsed)
+                      ? eventAttributeIds
+                      : JSON.stringify([]);
+                  } catch {
+                    attributesStr = JSON.stringify([]);
+                  }
+                } else if (Array.isArray(eventAttributeIds)) {
+                  attributesStr = JSON.stringify(eventAttributeIds);
+                } else {
+                  attributesStr = JSON.stringify([]);
+                }
                 allEvents.set((event as any).id, {
                   id: (event as any).id,
                   filmId: (event as any).filmId,
                   cinemaId: Number((event as any).cinemaId),
                   businessDay: (event as any).businessDay,
                   eventDateTime: (event as any).eventDateTime,
-                  attributes:
-                    typeof eventAttributeIds === "string"
-                      ? eventAttributeIds
-                      : JSON.stringify(eventAttributeIds),
+                  attributes: attributesStr,
                   bookingLink: (event as any).bookingLink,
                   secondaryBookingLink:
                     (event as any).secondaryBookingLink ?? "",
