@@ -5,6 +5,7 @@ import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "~/trpc/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import NavigationProgress from "~/components/navigation-progress";
+import Navbar from "~/app/_components/navbar";
 
 export const metadata: Metadata = {
   title: "MovieTime",
@@ -24,7 +25,10 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} dark`}>
       <body>
         <NavigationProgress />
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <Navbar />
+          {children}
+        </TRPCReactProvider>
         <SpeedInsights />
       </body>
     </html>

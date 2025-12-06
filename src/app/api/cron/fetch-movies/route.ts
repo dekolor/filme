@@ -1,10 +1,57 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { api } from "~/trpc/server";
-import type { Cinema, Movie, MovieEvent } from "@prisma/client";
+import type { Cinema } from "@prisma/client";
+
+// Control concurrency to avoid rate limiting
+const CINEMA_CONCURRENCY = 5;
+
+// Types for external API responses (attributeIds/attributes come as arrays from Cinema City API)
+interface ExternalMovie {
+  id: string;
+  name: string;
+  length: number;
+  posterLink: string;
+  videoLink: string | null;
+  link: string;
+  weight: number;
+  releaseYear: string | null;
+  releaseDate: string;
+  attributeIds: string[];
+}
+
+interface ExternalMovieEvent {
+  id: string;
+  filmId: string;
+  cinemaId: string;
+  businessDay: string;
+  eventDateTime: string;
+  attributeIds: string[];
+  bookingLink: string;
+  secondaryBookingLink: string | null;
+  presentationCode: string;
+  soldOut: boolean;
+  auditorium: string;
+  auditoriumTinyName: string;
+}
+
+/**
+ * Process items in parallel with limited concurrency
+ */
+async function processInBatches<T, R>(
+  items: T[],
+  batchSize: number,
+  processor: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(processor));
+    results.push(...batchResults);
+  }
+  return results;
+}
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -42,51 +89,93 @@ export async function POST(request: Request) {
 
     const createdCinemasResult = await api.cinema.create(cinemaDataToCreate);
 
-    for (const cinema of cinemas) {
-      const datesResponse = await axios.get(
-        `https://www.cinemacity.ro/ro/data-api-service/v1/quickbook/10107/dates/in-cinema/${cinema.id}/until/2026-04-06?attr=&lang=ro_RO`,
-      );
+    // Collect all movies and events from all cinemas in parallel
+    const allMovies: ExternalMovie[] = [];
+    const allEvents: ExternalMovieEvent[] = [];
+    const movieIds = new Set<string>();
+    const eventIds = new Set<string>();
 
-      const dates = datesResponse.data.body.dates as string[];
-
-      for (const date of dates) {
-        const eventsForDateResponse = await axios.get(
-          `https://www.cinemacity.ro/ro/data-api-service/v1/quickbook/10107/film-events/in-cinema/${cinema.id}/at-date/${date}?attr=&lang=ro_RO`,
+    await processInBatches(cinemas, CINEMA_CONCURRENCY, async (cinema) => {
+      try {
+        const datesResponse = await axios.get(
+          `https://www.cinemacity.ro/ro/data-api-service/v1/quickbook/10107/dates/in-cinema/${cinema.id}/until/2026-04-06?attr=&lang=ro_RO`,
         );
 
-        const moviesForDate = eventsForDateResponse.data.body.films as Movie[];
+        const dates = datesResponse.data.body.dates as string[];
 
-        const moviesForDateToCreate = moviesForDate.map((movie: Movie) => ({
-          ...movie,
-        }));
+        // Fetch all dates for this cinema in parallel
+        await Promise.all(
+          dates.map(async (date) => {
+            try {
+              const eventsForDateResponse = await axios.get(
+                `https://www.cinemacity.ro/ro/data-api-service/v1/quickbook/10107/film-events/in-cinema/${cinema.id}/at-date/${date}?attr=&lang=ro_RO`,
+              );
 
-        await api.movie.create(moviesForDateToCreate);
+              const moviesForDate = eventsForDateResponse.data.body
+                .films as ExternalMovie[];
+              const eventsForDate = eventsForDateResponse.data.body
+                .events as ExternalMovieEvent[];
 
-        const eventsForDate = eventsForDateResponse.data.body
-          .events as MovieEvent[];
+              // Collect unique movies
+              for (const movie of moviesForDate) {
+                if (!movieIds.has(movie.id)) {
+                  movieIds.add(movie.id);
+                  allMovies.push(movie);
+                }
+              }
 
-        const eventsForDateToCreate = eventsForDate.map(
-          (event: any) =>
-            ({
-              ...event,
-              cinemaId: Number(event.cinemaId),
-              attributes: event.attributeIds,
-              secondaryBookingLink: event.secondaryBookingLink ?? "",
-            }) as MovieEvent,
+              // Collect unique events
+              for (const event of eventsForDate) {
+                if (!eventIds.has(event.id)) {
+                  eventIds.add(event.id);
+                  allEvents.push(event);
+                }
+              }
+            } catch (error) {
+              console.error(
+                `Error fetching events for cinema ${cinema.id} on ${date}:`,
+                error instanceof Error ? error.message : error,
+              );
+            }
+          }),
         );
 
-        await api.movieEvent.create(eventsForDateToCreate);
+        console.log(`  ✓ ${cinema.displayName}: ${dates.length} dates`);
+      } catch (error) {
+        console.error(
+          `Error fetching dates for cinema ${cinema.id}:`,
+          error instanceof Error ? error.message : error,
+        );
       }
+    });
+
+    console.log(
+      `Collected ${allMovies.length} unique movies and ${allEvents.length} events`,
+    );
+
+    // Batch create movies
+    if (allMovies.length > 0) {
+      await api.movie.create(allMovies);
+    }
+
+    // Batch create events
+    if (allEvents.length > 0) {
+      const eventsToCreate = allEvents.map((event) => ({
+        ...event,
+        cinemaId: Number(event.cinemaId),
+        attributes: event.attributeIds,
+        secondaryBookingLink: event.secondaryBookingLink ?? "",
+      }));
+      await api.movieEvent.create(eventsToCreate);
     }
 
     return NextResponse.json(
       {
-        // Adjust the success message based on what createdCinemasResult actually returns
         message: `Successfully processed ${
           Array.isArray(createdCinemasResult)
             ? createdCinemasResult.length
-            : (createdCinemasResult?.count ?? 0) // Example: Adapt based on actual return type
-        } cinemas`,
+            : (createdCinemasResult?.count ?? 0)
+        } cinemas, ${allMovies.length} movies, ${allEvents.length} events`,
       },
       {
         status: 200,

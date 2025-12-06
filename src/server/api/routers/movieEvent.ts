@@ -23,8 +23,27 @@ export const movieEventRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
+      const data = input.map((event) => ({
+        ...event,
+        attributes: JSON.stringify(event.attributes),
+      }));
+      // SQLite doesn't support skipDuplicates, so we handle it conditionally
+      const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+      if (isSQLite) {
+        // For SQLite, insert one by one and ignore conflicts
+        let count = 0;
+        for (const event of data) {
+          try {
+            await ctx.db.movieEvent.create({ data: event });
+            count++;
+          } catch {
+            // Ignore duplicate key errors
+          }
+        }
+        return { count };
+      }
       return ctx.db.movieEvent.createMany({
-        data: input,
+        data,
         skipDuplicates: true,
       });
     }),
@@ -33,7 +52,7 @@ export const movieEventRouter = createTRPCRouter({
     .input(z.object({ cinemaId: z.number().optional(), movieId: z.string() }))
     .query(async ({ ctx, input }) => {
       const today = DateTime.now().toFormat("yyyy-MM-dd");
-      return ctx.db.movieEvent.findMany({
+      const events = await ctx.db.movieEvent.findMany({
         where: {
           cinemaId: input.cinemaId,
           filmId: input.movieId,
@@ -43,12 +62,16 @@ export const movieEventRouter = createTRPCRouter({
         },
         include: { Cinema: true },
       });
+      return events.map((event) => ({
+        ...event,
+        attributes: JSON.parse(event.attributes) as string[],
+      }));
     }),
 
   getByCinemaIdToday: publicProcedure
     .input(z.object({ cinemaId: z.number() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.movieEvent.findMany({
+      const events = await ctx.db.movieEvent.findMany({
         where: {
           cinemaId: input.cinemaId,
           businessDay: {
@@ -60,5 +83,13 @@ export const movieEventRouter = createTRPCRouter({
         },
         include: { Movie: true },
       });
+      return events.map((event) => ({
+        ...event,
+        attributes: JSON.parse(event.attributes) as string[],
+        Movie: {
+          ...event.Movie,
+          attributeIds: JSON.parse(event.Movie.attributeIds) as string[],
+        },
+      }));
     }),
 });

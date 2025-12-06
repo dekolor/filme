@@ -10,10 +10,18 @@ import { api } from "~/trpc/react";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { Movie, MovieEvent } from "@prisma/client";
+
+// Types for transformed data from tRPC (JSON strings parsed to arrays)
+type TransformedMovie = Omit<Movie, "attributeIds"> & {
+  attributeIds: string[];
+};
+type TransformedMovieEvent = Omit<MovieEvent, "attributes"> & {
+  attributes: string[];
+};
 import { DateTime } from "luxon";
 import { Skeleton } from "~/components/ui/skeleton";
 
-function groupShowtimes(showtimes: MovieEvent[]) {
+function groupShowtimes(showtimes: TransformedMovieEvent[]) {
   return {
     Morning: showtimes.filter(
       (s) => DateTime.fromISO(s.eventDateTime).hour < 12,
@@ -99,9 +107,11 @@ export function CinemaDetailsSkeleton() {
 
 export default function Cinema({ cinemaId }: { cinemaId: string }) {
   const { data: cinema, isLoading } = api.cinema.getById.useQuery(cinemaId);
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [movies, setMovies] = useState<TransformedMovie[]>([]);
 
-  const [grouped, setGrouped] = useState<Record<string, MovieEvent[]>>({});
+  const [grouped, setGrouped] = useState<
+    Record<string, TransformedMovieEvent[]>
+  >({});
 
   const { data: movieEvents } = api.movieEvent.getByCinemaIdToday.useQuery({
     cinemaId: parseInt(cinemaId),

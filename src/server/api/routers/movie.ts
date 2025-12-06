@@ -1,5 +1,47 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { normalizeMovieName } from "~/lib/utils";
+import type { Movie } from "@prisma/client";
+
+type MovieWithParsedAttributes = Omit<Movie, "attributeIds"> & {
+  attributeIds: string[];
+};
+
+/**
+ * Deduplicates movies by normalized name, keeping the one with a poster
+ * or the highest popularity score.
+ */
+function deduplicateMovies(
+  movies: MovieWithParsedAttributes[],
+): MovieWithParsedAttributes[] {
+  const movieMap = new Map<string, MovieWithParsedAttributes>();
+
+  for (const movie of movies) {
+    const normalizedName = normalizeMovieName(movie.name);
+    const existing = movieMap.get(normalizedName);
+
+    if (!existing) {
+      movieMap.set(normalizedName, movie);
+    } else {
+      // Prefer movie with a poster, then by popularity
+      const existingHasPoster =
+        existing.posterLink && !existing.posterLink.includes("noposter");
+      const currentHasPoster =
+        movie.posterLink && !movie.posterLink.includes("noposter");
+
+      if (!existingHasPoster && currentHasPoster) {
+        movieMap.set(normalizedName, movie);
+      } else if (
+        existingHasPoster === currentHasPoster &&
+        (movie.tmdbPopularity ?? 0) > (existing.tmdbPopularity ?? 0)
+      ) {
+        movieMap.set(normalizedName, movie);
+      }
+    }
+  }
+
+  return Array.from(movieMap.values());
+}
 
 export const movieRouter = createTRPCRouter({
   create: publicProcedure
@@ -20,8 +62,27 @@ export const movieRouter = createTRPCRouter({
       ),
     )
     .mutation(async ({ ctx, input }) => {
+      const data = input.map((movie) => ({
+        ...movie,
+        attributeIds: JSON.stringify(movie.attributeIds),
+      }));
+      // SQLite doesn't support skipDuplicates, so we handle it conditionally
+      const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+      if (isSQLite) {
+        // For SQLite, insert one by one and ignore conflicts
+        let count = 0;
+        for (const movie of data) {
+          try {
+            await ctx.db.movie.create({ data: movie });
+            count++;
+          } catch {
+            // Ignore duplicate key errors
+          }
+        }
+        return { count };
+      }
       return ctx.db.movie.createMany({
-        data: input,
+        data,
         skipDuplicates: true,
       });
     }),
@@ -36,9 +97,11 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      // Fetch more movies than requested to account for deduplication
+      const fetchLimit = input.limit ? input.limit * 2 : undefined;
       const movies = await ctx.db.movie.findMany({
         skip: input.offset,
-        take: input.limit,
+        take: fetchLimit,
         where: {
           events: {
             some: {
@@ -55,7 +118,12 @@ export const movieRouter = createTRPCRouter({
           tmdbPopularity: input.orderByPopularity,
         },
       });
-      return movies;
+      const parsedMovies = movies.map((movie) => ({
+        ...movie,
+        attributeIds: JSON.parse(movie.attributeIds) as string[],
+      }));
+      const deduplicated = deduplicateMovies(parsedMovies);
+      return input.limit ? deduplicated.slice(0, input.limit) : deduplicated;
     }),
 
   getAllUpcoming: publicProcedure
@@ -67,6 +135,8 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      // Fetch more movies than requested to account for deduplication
+      const fetchLimit = input.limit ? input.limit * 2 : undefined;
       const movies = await ctx.db.movie.findMany({
         where: {
           releaseDate: {
@@ -74,35 +144,68 @@ export const movieRouter = createTRPCRouter({
           },
         },
         skip: input.offset,
-        take: input.limit,
+        take: fetchLimit,
         orderBy: {
           tmdbPopularity: input.orderByPopularity,
         },
       });
-      return movies;
+      const parsedMovies = movies.map((movie) => ({
+        ...movie,
+        attributeIds: JSON.parse(movie.attributeIds) as string[],
+      }));
+      const deduplicated = deduplicateMovies(parsedMovies);
+      return input.limit ? deduplicated.slice(0, input.limit) : deduplicated;
     }),
 
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    return ctx.db.movie.findUnique({ where: { id: input } });
+    const movie = await ctx.db.movie.findUnique({ where: { id: input } });
+    if (!movie) return null;
+    return {
+      ...movie,
+      attributeIds: JSON.parse(movie.attributeIds) as string[],
+    };
   }),
 
   search: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     // Split search term into words and filter out empty strings
-    const searchWords = input.trim().split(/\s+/).filter(word => word.length > 0);
-    
+    const searchWords = input
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
+
     if (searchWords.length === 0) {
       return [];
     }
-    
-    // Create AND conditions for each word to match anywhere in the movie name
-    const whereConditions = searchWords.map(word => ({
-      name: { contains: word, mode: "insensitive" as const }
+
+    // Check if we're using SQLite (doesn't support mode: "insensitive")
+    const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+
+    // Build where conditions based on database type
+    const whereConditions = searchWords.map((word) => ({
+      name: isSQLite
+        ? { contains: word }
+        : { contains: word, mode: "insensitive" as const },
     }));
-    
-    return ctx.db.movie.findMany({
+
+    const movies = await ctx.db.movie.findMany({
       where: {
-        AND: whereConditions
+        AND: whereConditions,
       },
     });
+
+    // For SQLite, filter results case-insensitively in JavaScript
+    const filteredMovies = isSQLite
+      ? movies.filter((movie) =>
+          searchWords.every((word) =>
+            movie.name.toLowerCase().includes(word.toLowerCase()),
+          ),
+        )
+      : movies;
+
+    const parsedMovies = filteredMovies.map((movie) => ({
+      ...movie,
+      attributeIds: JSON.parse(movie.attributeIds) as string[],
+    }));
+    return deduplicateMovies(parsedMovies);
   }),
 });
