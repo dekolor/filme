@@ -1,10 +1,37 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { api } from "~/trpc/server";
-import type { Cinema, Movie, MovieEvent } from "@prisma/client";
+import type { Cinema } from "@prisma/client";
+
+// Types for external API responses (attributeIds/attributes come as arrays from Cinema City API)
+interface ExternalMovie {
+  id: string;
+  name: string;
+  length: number;
+  posterLink: string;
+  videoLink: string | null;
+  link: string;
+  weight: number;
+  releaseYear: string | null;
+  releaseDate: string;
+  attributeIds: string[];
+}
+
+interface ExternalMovieEvent {
+  id: string;
+  filmId: string;
+  cinemaId: string;
+  businessDay: string;
+  eventDateTime: string;
+  attributeIds: string[];
+  bookingLink: string;
+  secondaryBookingLink: string | null;
+  presentationCode: string;
+  soldOut: boolean;
+  auditorium: string;
+  auditoriumTinyName: string;
+}
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -54,25 +81,27 @@ export async function POST(request: Request) {
           `https://www.cinemacity.ro/ro/data-api-service/v1/quickbook/10107/film-events/in-cinema/${cinema.id}/at-date/${date}?attr=&lang=ro_RO`,
         );
 
-        const moviesForDate = eventsForDateResponse.data.body.films as Movie[];
+        const moviesForDate = eventsForDateResponse.data.body
+          .films as ExternalMovie[];
 
-        const moviesForDateToCreate = moviesForDate.map((movie: Movie) => ({
-          ...movie,
-        }));
+        const moviesForDateToCreate = moviesForDate.map(
+          (movie: ExternalMovie) => ({
+            ...movie,
+          }),
+        );
 
         await api.movie.create(moviesForDateToCreate);
 
         const eventsForDate = eventsForDateResponse.data.body
-          .events as MovieEvent[];
+          .events as ExternalMovieEvent[];
 
         const eventsForDateToCreate = eventsForDate.map(
-          (event: any) =>
-            ({
-              ...event,
-              cinemaId: Number(event.cinemaId),
-              attributes: event.attributeIds,
-              secondaryBookingLink: event.secondaryBookingLink ?? "",
-            }) as MovieEvent,
+          (event: ExternalMovieEvent) => ({
+            ...event,
+            cinemaId: Number(event.cinemaId),
+            attributes: event.attributeIds,
+            secondaryBookingLink: event.secondaryBookingLink ?? "",
+          }),
         );
 
         await api.movieEvent.create(eventsForDateToCreate);

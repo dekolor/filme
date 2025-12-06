@@ -1,5 +1,47 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { normalizeMovieName } from "~/lib/utils";
+import type { Movie } from "@prisma/client";
+
+type MovieWithParsedAttributes = Omit<Movie, "attributeIds"> & {
+  attributeIds: string[];
+};
+
+/**
+ * Deduplicates movies by normalized name, keeping the one with a poster
+ * or the highest popularity score.
+ */
+function deduplicateMovies(
+  movies: MovieWithParsedAttributes[],
+): MovieWithParsedAttributes[] {
+  const movieMap = new Map<string, MovieWithParsedAttributes>();
+
+  for (const movie of movies) {
+    const normalizedName = normalizeMovieName(movie.name);
+    const existing = movieMap.get(normalizedName);
+
+    if (!existing) {
+      movieMap.set(normalizedName, movie);
+    } else {
+      // Prefer movie with a poster, then by popularity
+      const existingHasPoster =
+        existing.posterLink && !existing.posterLink.includes("noposter");
+      const currentHasPoster =
+        movie.posterLink && !movie.posterLink.includes("noposter");
+
+      if (!existingHasPoster && currentHasPoster) {
+        movieMap.set(normalizedName, movie);
+      } else if (
+        existingHasPoster === currentHasPoster &&
+        (movie.tmdbPopularity ?? 0) > (existing.tmdbPopularity ?? 0)
+      ) {
+        movieMap.set(normalizedName, movie);
+      }
+    }
+  }
+
+  return Array.from(movieMap.values());
+}
 
 export const movieRouter = createTRPCRouter({
   create: publicProcedure
@@ -39,9 +81,11 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      // Fetch more movies than requested to account for deduplication
+      const fetchLimit = input.limit ? input.limit * 2 : undefined;
       const movies = await ctx.db.movie.findMany({
         skip: input.offset,
-        take: input.limit,
+        take: fetchLimit,
         where: {
           events: {
             some: {
@@ -58,10 +102,12 @@ export const movieRouter = createTRPCRouter({
           tmdbPopularity: input.orderByPopularity,
         },
       });
-      return movies.map((movie) => ({
+      const parsedMovies = movies.map((movie) => ({
         ...movie,
         attributeIds: JSON.parse(movie.attributeIds) as string[],
       }));
+      const deduplicated = deduplicateMovies(parsedMovies);
+      return input.limit ? deduplicated.slice(0, input.limit) : deduplicated;
     }),
 
   getAllUpcoming: publicProcedure
@@ -73,6 +119,8 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      // Fetch more movies than requested to account for deduplication
+      const fetchLimit = input.limit ? input.limit * 2 : undefined;
       const movies = await ctx.db.movie.findMany({
         where: {
           releaseDate: {
@@ -80,15 +128,17 @@ export const movieRouter = createTRPCRouter({
           },
         },
         skip: input.offset,
-        take: input.limit,
+        take: fetchLimit,
         orderBy: {
           tmdbPopularity: input.orderByPopularity,
         },
       });
-      return movies.map((movie) => ({
+      const parsedMovies = movies.map((movie) => ({
         ...movie,
         attributeIds: JSON.parse(movie.attributeIds) as string[],
       }));
+      const deduplicated = deduplicateMovies(parsedMovies);
+      return input.limit ? deduplicated.slice(0, input.limit) : deduplicated;
     }),
 
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -102,7 +152,10 @@ export const movieRouter = createTRPCRouter({
 
   search: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     // Split search term into words and filter out empty strings
-    const searchWords = input.trim().split(/\s+/).filter(word => word.length > 0);
+    const searchWords = input
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
 
     if (searchWords.length === 0) {
       return [];
@@ -110,19 +163,20 @@ export const movieRouter = createTRPCRouter({
 
     // SQLite doesn't support case-insensitive mode like PostgreSQL
     // Use contains without mode for SQLite compatibility
-    const whereConditions = searchWords.map(word => ({
-      name: { contains: word }
+    const whereConditions = searchWords.map((word) => ({
+      name: { contains: word },
     }));
 
     const movies = await ctx.db.movie.findMany({
       where: {
-        AND: whereConditions
+        AND: whereConditions,
       },
     });
 
-    return movies.map((movie) => ({
+    const parsedMovies = movies.map((movie) => ({
       ...movie,
       attributeIds: JSON.parse(movie.attributeIds) as string[],
     }));
+    return deduplicateMovies(parsedMovies);
   }),
 });

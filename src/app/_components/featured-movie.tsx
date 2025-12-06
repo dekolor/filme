@@ -7,17 +7,24 @@ interface FeaturedMovieProps {
   movie: Movie | null;
 }
 
-export default function FeaturedMovie({ movie: featuredMovie }: FeaturedMovieProps) {
+export default function FeaturedMovie({
+  movie: featuredMovie,
+}: FeaturedMovieProps) {
   if (!featuredMovie) {
     return null;
   }
 
   return (
-    <div data-testid="featured-movie" className="relative mb-10 flex h-[340px] items-center overflow-hidden rounded-xl">
+    <div
+      data-testid="featured-movie"
+      className="relative mb-10 flex h-[340px] items-center overflow-hidden rounded-xl"
+    >
       <Image
         src={featuredMovie.posterLink}
         alt=""
         fill
+        priority
+        sizes="100vw"
         className="scale-105 object-cover blur-md brightness-60"
         aria-hidden
       />
@@ -27,7 +34,9 @@ export default function FeaturedMovie({ movie: featuredMovie }: FeaturedMoviePro
           alt={featuredMovie.name}
           width={120}
           height={180}
+          priority
           className="hidden rounded-xl shadow-xl md:block"
+          style={{ width: "auto", height: "auto" }}
         />
         <div className="flex max-w-lg flex-col">
           <span className="mb-2 w-max rounded bg-white/10 px-3 py-1 text-xs text-white">

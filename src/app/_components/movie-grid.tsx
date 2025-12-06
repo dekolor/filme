@@ -17,7 +17,7 @@ type Movie = {
 export default function MovieGrid({ movies }: { movies: Movie[] }) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-      {movies.map((movie) => (
+      {movies.map((movie, index) => (
         <Link key={movie.id} href={`/movies/${movie.id}`} className="group">
           <Card className="h-full overflow-hidden transition-all hover:scale-105 hover:shadow-lg">
             <div className="relative aspect-[2/3] overflow-hidden">
@@ -27,6 +27,7 @@ export default function MovieGrid({ movies }: { movies: Movie[] }) {
                 fill
                 className="object-cover transition-transform group-hover:scale-110"
                 sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+                priority={index < 6}
               />
             </div>
             <div className="p-3">

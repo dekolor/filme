@@ -10,8 +10,9 @@ const config = {
     remotePatterns: [
       { hostname: "*.cinemacity.ro" },
       { hostname: "picsum.photos" },
+      { hostname: "image.tmdb.org" },
     ],
-    formats: ['image/webp', 'image/avif'],
+    formats: ["image/webp", "image/avif"],
   },
 };
 

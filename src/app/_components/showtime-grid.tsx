@@ -5,7 +5,13 @@ import { Card, CardContent } from "~/components/ui/card";
 import { MapPin } from "lucide-react";
 import { Clock } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { MovieEvent } from "@prisma/client";
+import type { MovieEvent, Cinema } from "@prisma/client";
+
+// Type for transformed data from tRPC (JSON strings parsed to arrays)
+type TransformedMovieEvent = Omit<MovieEvent, "attributes"> & {
+  attributes: string[];
+  Cinema: Cinema;
+};
 import { api } from "~/trpc/react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { DateTime } from "luxon";
@@ -20,7 +26,9 @@ export default function ShowtimeGrid({
   movieLink?: string;
 }) {
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [showtimes, setShowtimes] = useState<MovieEvent[] | null>(null);
+  const [showtimes, setShowtimes] = useState<TransformedMovieEvent[] | null>(
+    null,
+  );
   const [availableDates, setAvailableDates] = useState<string[]>([]);
 
   const { data: events, isLoading } =
@@ -55,23 +63,27 @@ export default function ShowtimeGrid({
       <div className="flex flex-wrap gap-2">
         {availableDates.map((date) => {
           const today = DateTime.now().toFormat("yyyy-MM-dd");
-          const tomorrow = DateTime.now().plus({ days: 1 }).toFormat("yyyy-MM-dd");
-          
+          const tomorrow = DateTime.now()
+            .plus({ days: 1 })
+            .toFormat("yyyy-MM-dd");
+
           let displayText = date;
           let customClasses = "";
-          
+
           if (date === today) {
             displayText = "Today";
-            customClasses = selectedDate === date 
-              ? "border-yellow-500 bg-yellow-500 text-black hover:bg-yellow-600" 
-              : "border-yellow-500 text-yellow-500 hover:bg-yellow-500/10";
+            customClasses =
+              selectedDate === date
+                ? "border-yellow-500 bg-yellow-500 text-black hover:bg-yellow-600"
+                : "border-yellow-500 text-yellow-500 hover:bg-yellow-500/10";
           } else if (date === tomorrow) {
             displayText = "Tomorrow";
-            customClasses = selectedDate === date
-              ? "border-purple-500 bg-purple-500 text-white hover:bg-purple-600"
-              : "border-purple-500 text-purple-500 hover:bg-purple-500/10";
+            customClasses =
+              selectedDate === date
+                ? "border-purple-500 bg-purple-500 text-white hover:bg-purple-600"
+                : "border-purple-500 text-purple-500 hover:bg-purple-500/10";
           }
-          
+
           return (
             <Button
               key={date}
