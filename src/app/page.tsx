@@ -6,6 +6,9 @@ import FeaturedMovie from "./_components/featured-movie";
 import { api, HydrateClient } from "~/trpc/server";
 import { ErrorBoundary } from "~/components/error-boundary";
 
+// Enable ISR - revalidate every 60 seconds
+export const revalidate = 60;
+
 export default async function Home() {
   try {
     const dashboardData = await api.dashboard.getData();

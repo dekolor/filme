@@ -1,5 +1,4 @@
 import { defineConfig, devices } from "@playwright/test";
-import { join } from "path";
 
 /**
  * Read environment variables from file.
@@ -7,14 +6,17 @@ import { join } from "path";
  */
 import "dotenv/config";
 
-const TEST_DB_PATH = join(process.cwd(), "prisma", "test.db");
-const TEST_DB_URL = `file:${TEST_DB_PATH}`;
+const TEST_DB_URL = "postgresql://dekolor@localhost:5432/filme_test";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: "./tests",
+  /* Global setup to prepare test database */
+  globalSetup: "./tests/global-setup.ts",
+  /* Global teardown to restore production environment */
+  globalTeardown: "./tests/global-teardown.ts",
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

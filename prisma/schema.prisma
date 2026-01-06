@@ -20,6 +20,8 @@ model Cinema {
   latitude              Float
   longitude             Float
   events                MovieEvent[]
+
+  @@index([displayName])
 }
 
 model Movie {
@@ -38,6 +40,7 @@ model Movie {
   tmdbPopularity Float?
   events         MovieEvent[]
 
+  @@index([name])
   @@index([tmdbPopularity])
   @@index([releaseDate])
   @@index([tmdbPopularity, releaseDate])

@@ -6,11 +6,13 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { timingSafeEqual } from "crypto";
 
 import { db } from "~/server/db";
+import { env } from "~/env";
 
 /**
  * 1. CONTEXT
@@ -104,3 +106,33 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+/**
+ * Protected procedure - requires CRON_SECRET authentication
+ *
+ * Use this for mutations that should only be accessible by authenticated services (like cron jobs).
+ * The Authorization header must contain: Bearer ${CRON_SECRET}
+ */
+const authMiddleware = t.middleware(async ({ ctx, next }) => {
+  const authHeader = ctx.headers.get("authorization");
+  const expectedAuth = `Bearer ${env.CRON_SECRET}`;
+
+  // Use constant-time comparison to prevent timing attacks
+  const isValid =
+    authHeader &&
+    authHeader.length === expectedAuth.length &&
+    timingSafeEqual(Buffer.from(authHeader), Buffer.from(expectedAuth));
+
+  if (!isValid) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid or missing authentication",
+    });
+  }
+
+  return next();
+});
+
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(authMiddleware);

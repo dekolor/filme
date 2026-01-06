@@ -1,46 +1,11 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { normalizeMovieName } from "~/lib/utils";
-import type { Movie } from "@prisma/client";
+import { deduplicateMovies } from "~/lib/movie-utils";
 
 const DASHBOARD_LIMITS = {
   MOVIES: 4,
   UPCOMING_MOVIES: 4,
   CINEMAS: 20,
 } as const;
-
-/**
- * Deduplicates movies by normalized name, keeping the one with a poster
- * or the highest popularity score.
- */
-function deduplicateMovies(movies: Movie[]): Movie[] {
-  const movieMap = new Map<string, Movie>();
-
-  for (const movie of movies) {
-    const normalizedName = normalizeMovieName(movie.name);
-    const existing = movieMap.get(normalizedName);
-
-    if (!existing) {
-      movieMap.set(normalizedName, movie);
-    } else {
-      // Prefer movie with a poster, then by popularity
-      const existingHasPoster =
-        existing.posterLink && !existing.posterLink.includes("noposter");
-      const currentHasPoster =
-        movie.posterLink && !movie.posterLink.includes("noposter");
-
-      if (!existingHasPoster && currentHasPoster) {
-        movieMap.set(normalizedName, movie);
-      } else if (
-        existingHasPoster === currentHasPoster &&
-        (movie.tmdbPopularity ?? 0) > (existing.tmdbPopularity ?? 0)
-      ) {
-        movieMap.set(normalizedName, movie);
-      }
-    }
-  }
-
-  return Array.from(movieMap.values());
-}
 
 export const dashboardRouter = createTRPCRouter({
   getData: publicProcedure.query(async ({ ctx }) => {

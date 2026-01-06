@@ -1,5 +1,4 @@
-import { test, expect } from "@playwright/test";
-import { DateTime } from "luxon";
+import { test, expect } from "./fixtures";
 
 test.beforeEach(async ({ page }) => {
   await page.goto('movies/MOV1');
@@ -18,5 +17,5 @@ test('has showtimes', async ({ page }) => {
   await expect(page.getByTestId('movie-showtimes')).toBeVisible();
   await expect(page.getByTestId('movie-showtimes').getByRole('button', { name: 'Tomorrow' })).toBeVisible();
 
-  await expect(page.getByTestId('movie-showtimes').locator('div[data-slot="card"]')).toHaveCount(1);
+  await expect(page.getByTestId('movie-showtimes').locator('div[data-slot="card"]')).toHaveCount(3);
 });

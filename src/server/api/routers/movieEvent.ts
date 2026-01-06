@@ -1,9 +1,14 @@
 import { DateTime } from "luxon";
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
+import { isSQLiteDatabase } from "~/lib/database-utils";
 
 export const movieEventRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.array(
         z.object({
@@ -28,7 +33,7 @@ export const movieEventRouter = createTRPCRouter({
         attributes: JSON.stringify(event.attributes),
       }));
       // SQLite doesn't support skipDuplicates, so we handle it conditionally
-      const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+      const isSQLite = isSQLiteDatabase();
       if (isSQLite) {
         // For SQLite, insert one by one and ignore conflicts
         let count = 0;

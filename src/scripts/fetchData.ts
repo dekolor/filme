@@ -5,6 +5,8 @@
 import axios from "axios";
 import type { Cinema, Movie, MovieEvent } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
+import { processInBatches } from "../lib/async-utils";
+import { normalizeMovieName } from "../lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -13,23 +15,6 @@ const CINEMA_CONCURRENCY = 5;
 const TMDB_CONCURRENCY = 10;
 
 console.log("Starting script: fetch-movies");
-
-/**
- * Process items in parallel with limited concurrency
- */
-async function processInBatches<T, R>(
-  items: T[],
-  batchSize: number,
-  processor: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = [];
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map(processor));
-    results.push(...batchResults);
-  }
-  return results;
-}
 
 const fetchMovies = async () => {
   try {
@@ -226,16 +211,6 @@ const fetchMovies = async () => {
     console.error("Error fetching movies", error);
   }
 };
-
-/**
- * Normalizes a movie name by removing language/format suffixes for better TMDB search results.
- */
-function normalizeMovieName(name: string): string {
-  return name
-    .replace(/\s+(Hu|HU|Ua|UA|2D|3D|4DX)\s+dub$/i, "")
-    .replace(/\s+dub$/i, "")
-    .trim();
-}
 
 /**
  * Checks if a URL returns a valid response (not 404).

@@ -1,50 +1,15 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { normalizeMovieName } from "~/lib/utils";
-import type { Movie } from "@prisma/client";
-
-type MovieWithParsedAttributes = Omit<Movie, "attributeIds"> & {
-  attributeIds: string[];
-};
-
-/**
- * Deduplicates movies by normalized name, keeping the one with a poster
- * or the highest popularity score.
- */
-function deduplicateMovies(
-  movies: MovieWithParsedAttributes[],
-): MovieWithParsedAttributes[] {
-  const movieMap = new Map<string, MovieWithParsedAttributes>();
-
-  for (const movie of movies) {
-    const normalizedName = normalizeMovieName(movie.name);
-    const existing = movieMap.get(normalizedName);
-
-    if (!existing) {
-      movieMap.set(normalizedName, movie);
-    } else {
-      // Prefer movie with a poster, then by popularity
-      const existingHasPoster =
-        existing.posterLink && !existing.posterLink.includes("noposter");
-      const currentHasPoster =
-        movie.posterLink && !movie.posterLink.includes("noposter");
-
-      if (!existingHasPoster && currentHasPoster) {
-        movieMap.set(normalizedName, movie);
-      } else if (
-        existingHasPoster === currentHasPoster &&
-        (movie.tmdbPopularity ?? 0) > (existing.tmdbPopularity ?? 0)
-      ) {
-        movieMap.set(normalizedName, movie);
-      }
-    }
-  }
-
-  return Array.from(movieMap.values());
-}
+import { TRPCError } from "@trpc/server";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
+import { deduplicateMovies } from "~/lib/movie-utils";
+import { isSQLiteDatabase } from "~/lib/database-utils";
 
 export const movieRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.array(
         z.object({
@@ -67,7 +32,7 @@ export const movieRouter = createTRPCRouter({
         attributeIds: JSON.stringify(movie.attributeIds),
       }));
       // SQLite doesn't support skipDuplicates, so we handle it conditionally
-      const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+      const isSQLite = isSQLiteDatabase();
       if (isSQLite) {
         // For SQLite, insert one by one and ignore conflicts
         let count = 0;
@@ -166,19 +131,29 @@ export const movieRouter = createTRPCRouter({
     };
   }),
 
-  search: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    // Split search term into words and filter out empty strings
-    const searchWords = input
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
+  search: publicProcedure
+    .input(z.string().max(100))
+    .query(async ({ ctx, input }) => {
+      // Split search term into words and filter out empty strings
+      const sanitized = input.trim().slice(0, 100);
+      const searchWords = sanitized
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
 
-    if (searchWords.length === 0) {
-      return [];
-    }
+      if (searchWords.length === 0) {
+        return [];
+      }
+
+      // Limit number of search terms to prevent performance issues
+      if (searchWords.length > 10) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Too many search terms (max 10)",
+        });
+      }
 
     // Check if we're using SQLite (doesn't support mode: "insensitive")
-    const isSQLite = process.env.DATABASE_URL?.startsWith("file:");
+    const isSQLite = isSQLiteDatabase();
 
     // Build where conditions based on database type
     const whereConditions = searchWords.map((word) => ({

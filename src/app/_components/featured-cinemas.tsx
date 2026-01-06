@@ -205,6 +205,7 @@ export default function FeaturedCinemas({
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
             className="h-8 w-8"
+            aria-label="Scroll cinemas left"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -214,6 +215,7 @@ export default function FeaturedCinemas({
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
             className="h-8 w-8"
+            aria-label="Scroll cinemas right"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

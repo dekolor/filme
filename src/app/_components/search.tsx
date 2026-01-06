@@ -73,7 +73,7 @@ export default function SearchResults({ query }: { query: string }) {
 
       <div className="space-y-6">
         {results?.map((movie) => (
-          <div
+          <article
             key={movie.id}
             className="bg-card flex flex-col gap-4 overflow-hidden rounded-lg shadow-sm sm:flex-row"
             data-testid="movie-search-card"
@@ -122,7 +122,7 @@ export default function SearchResults({ query }: { query: string }) {
                 </Button>
               </div>
             </div>
-          </div>
+          </article>
         ))}
 
         {results?.length === 0 && (

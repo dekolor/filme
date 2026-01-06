@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { createCaller } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
+import { env } from "~/env";
 
 // Type for external API movie data (attributeIds comes as array)
 interface ExternalMovie {
@@ -17,6 +19,19 @@ interface ExternalMovie {
 }
 
 export async function POST(req: Request) {
+  // Verify authentication
+  const authHeader = req.headers.get("authorization");
+  const expectedAuth = `Bearer ${env.CRON_SECRET}`;
+
+  const isValid =
+    authHeader &&
+    authHeader.length === expectedAuth.length &&
+    timingSafeEqual(Buffer.from(authHeader), Buffer.from(expectedAuth));
+
+  if (!isValid) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const ctx = await createTRPCContext({ headers: req.headers });
   const caller = createCaller(ctx);
   try {
@@ -24,7 +39,10 @@ export async function POST(req: Request) {
     await caller.movie.create(movies);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.log(error);
-    return NextResponse.json({ success: false, error: error }, { status: 500 });
+    console.error("Error creating movies:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to create movies" },
+      { status: 500 },
+    );
   }
 }

@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import axios from "axios";
 import { api } from "~/trpc/server";
 import type { Cinema } from "@prisma/client";
+import { processInBatches } from "~/lib/async-utils";
 
 // Control concurrency to avoid rate limiting
 const CINEMA_CONCURRENCY = 5;
@@ -36,23 +38,6 @@ interface ExternalMovieEvent {
   auditoriumTinyName: string;
 }
 
-/**
- * Process items in parallel with limited concurrency
- */
-async function processInBatches<T, R>(
-  items: T[],
-  batchSize: number,
-  processor: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = [];
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map(processor));
-    results.push(...batchResults);
-  }
-  return results;
-}
-
 const CRON_SECRET = process.env.CRON_SECRET;
 
 export async function POST(request: Request) {
@@ -65,7 +50,17 @@ export async function POST(request: Request) {
     );
   }
 
-  if (authorizationHeader !== `Bearer ${CRON_SECRET}`) {
+  // Use constant-time comparison to prevent timing attacks
+  const expectedAuth = `Bearer ${CRON_SECRET}`;
+  const isValid =
+    authorizationHeader &&
+    authorizationHeader.length === expectedAuth.length &&
+    timingSafeEqual(
+      Buffer.from(authorizationHeader),
+      Buffer.from(expectedAuth),
+    );
+
+  if (!isValid) {
     console.warn("Unauthorized cron attempt detected");
     return NextResponse.json(
       { message: "Invalid authorization" },
