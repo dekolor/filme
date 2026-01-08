@@ -3,8 +3,6 @@
  * Runs before all tests to prepare the test environment
  */
 
-import { join } from "path";
-import { existsSync, unlinkSync } from "fs";
 import { execSync } from "child_process";
 import { PrismaClient } from "@prisma/client";
 

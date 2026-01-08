@@ -62,7 +62,7 @@ describe("useLocation", () => {
 
     it("handles invalid localStorage data gracefully", async () => {
       // Suppress console.warn for this test since we expect validation errors
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
 
       localStorage.setItem("userLocation", "invalid json");
 
@@ -80,7 +80,7 @@ describe("useLocation", () => {
 
     it("validates location data structure", async () => {
       // Suppress console.warn for this test since we expect validation errors
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
 
       const invalidLocation = {
         latitude: "invalid",
@@ -114,13 +114,13 @@ describe("useLocation", () => {
 
   describe("requestLocation with GPS", () => {
     it("gets GPS location successfully", async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback) => {
         success({
           coords: {
             latitude: 44.4268,
             longitude: 26.1025,
           },
-        });
+        } as GeolocationPosition);
       });
 
       const { result } = renderHook(() => useLocation());
@@ -139,13 +139,13 @@ describe("useLocation", () => {
     });
 
     it("saves GPS location to localStorage", async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback) => {
         success({
           coords: {
             latitude: 44.4268,
             longitude: 26.1025,
           },
-        });
+        } as GeolocationPosition);
       });
 
       const { result } = renderHook(() => useLocation());
@@ -164,19 +164,19 @@ describe("useLocation", () => {
     });
 
     it("sets loading state during request", async () => {
-      let resolvePosition: (value: any) => void;
+      let resolvePosition: (value: unknown) => void;
       const positionPromise = new Promise((resolve) => {
         resolvePosition = resolve;
       });
 
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
-        positionPromise.then(() => {
+      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback) => {
+        void positionPromise.then(() => {
           success({
             coords: {
               latitude: 44.4268,
               longitude: 26.1025,
             },
-          });
+          } as GeolocationPosition);
         });
       });
 
@@ -200,16 +200,16 @@ describe("useLocation", () => {
 
     it("falls back to IP location when GPS fails", async () => {
       // Suppress console warnings for expected error paths
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
 
-      mockGeolocation.getCurrentPosition.mockImplementation((_, error) => {
-        error({
+      mockGeolocation.getCurrentPosition.mockImplementation((_: PositionCallback, error?: PositionErrorCallback) => {
+        error?.({
           code: 1,
           message: "User denied geolocation",
           PERMISSION_DENIED: 1,
           POSITION_UNAVAILABLE: 2,
           TIMEOUT: 3,
-        });
+        } as GeolocationPositionError);
       });
 
       mockFetch.mockResolvedValue({
@@ -265,7 +265,7 @@ describe("useLocation", () => {
 
     it("uses fallback when IP location fails", async () => {
       // Suppress console warnings for expected error paths
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
 
       mockFetch.mockRejectedValue(new Error("Network error"));
 
@@ -286,7 +286,7 @@ describe("useLocation", () => {
 
     it("handles API error response", async () => {
       // Suppress console warnings for expected error paths
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
 
       mockFetch.mockResolvedValue({
         ok: true,
@@ -344,17 +344,17 @@ describe("useLocation", () => {
   describe("error handling", () => {
     it("sets error when GPS permission denied", async () => {
       // Suppress console warnings for expected error paths
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
-      mockGeolocation.getCurrentPosition.mockImplementation((_, error) => {
-        error({
+      mockGeolocation.getCurrentPosition.mockImplementation((_: PositionCallback, error?: PositionErrorCallback) => {
+        error?.({
           code: 1,
           message: "User denied",
           PERMISSION_DENIED: 1,
           POSITION_UNAVAILABLE: 2,
           TIMEOUT: 3,
-        });
+        } as GeolocationPositionError);
       });
 
       mockFetch.mockRejectedValue(new Error("Network error"));
@@ -386,13 +386,13 @@ describe("useLocation", () => {
 
   describe("resetLocation", () => {
     it("clears location and permissions", async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+      mockGeolocation.getCurrentPosition.mockImplementation((success: PositionCallback) => {
         success({
           coords: {
             latitude: 44.4268,
             longitude: 26.1025,
           },
-        });
+        } as GeolocationPosition);
       });
 
       const { result } = renderHook(() => useLocation());
@@ -434,7 +434,7 @@ describe("useLocation", () => {
   describe("request deduplication", () => {
     it("deduplicates concurrent IP location requests", async () => {
       // Suppress console.log for deduplication message
-      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
 
       mockFetch.mockImplementation(
         () =>

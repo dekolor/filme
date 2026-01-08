@@ -3,7 +3,8 @@ import { Button } from "~/components/ui/button";
 import FeaturedMovies from "~/app/_components/featured-movies";
 import FeaturedCinemas from "./_components/featured-cinemas";
 import FeaturedMovie from "./_components/featured-movie";
-import { api, HydrateClient } from "~/trpc/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../convex/_generated/api";
 import { ErrorBoundary } from "~/components/error-boundary";
 
 // Enable ISR - revalidate every 60 seconds
@@ -11,10 +12,10 @@ export const revalidate = 60;
 
 export default async function Home() {
   try {
-    const dashboardData = await api.dashboard.getData();
+    const dashboardData = await fetchQuery(api.dashboard.getDashboardData, {});
 
     return (
-      <HydrateClient>
+      <>
         <div className="bg-background min-h-screen">
           <main className="container mx-auto px-4 py-8">
             <ErrorBoundary>
@@ -63,7 +64,7 @@ export default async function Home() {
             </div>
           </footer>
         </div>
-      </HydrateClient>
+      </>
     );
   } catch (error) {
     console.error("Failed to load dashboard data:", error);
