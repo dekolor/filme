@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MovieTime is a Next.js web application for discovering movies and showtimes at Cinema City locations in Romania. The app features automated nightly data updates, movie search, and comprehensive cinema/movie information.
+MovieTime is a Next.js web application for discovering movies and showtimes at Cinema City locations in Romania. The app features automated nightly data updates via Convex scheduled functions, movie search, and comprehensive cinema/movie information.
 
 ## Key Commands
 
@@ -22,64 +22,92 @@ MovieTime is a Next.js web application for discovering movies and showtimes at C
 - `npm run format:check` - Check code formatting with Prettier
 - `npm run format:write` - Auto-format code with Prettier
 
-### Database
-- `npm run db:generate` - Generate Prisma client and run migrations
-- `npm run db:migrate` - Deploy migrations to production
-- `npm run db:push` - Push schema changes to database
-- `npm run db:studio` - Open Prisma Studio
+### Convex (Database & Backend)
+- `npm run convex:dev` - Start Convex development server
+- `npm run convex:deploy` - Deploy Convex functions to production
+- `npm run export-data` - Export PostgreSQL data for migration (one-time use)
 
 ### Testing
 - `npx playwright test` - Run Playwright end-to-end tests
 - `npx playwright test --ui` - Run tests with UI mode
+- `npm run test:unit` - Run Vitest unit tests
 
 ## Architecture
 
 ### Tech Stack
 - **Frontend**: Next.js 15, React 19, TypeScript, TailwindCSS
-- **Backend**: tRPC API routes, Prisma ORM, PostgreSQL (Neon)
+- **Backend**: Convex (serverless database and functions)
 - **UI Components**: Radix UI, shadcn/ui components
-- **Testing**: Playwright for E2E testing
-- **Deployment**: Vercel
+- **Testing**: Playwright for E2E testing, Vitest for unit tests
+- **Deployment**: Vercel (frontend), Convex Cloud (backend)
 
 ### Core Data Models
-- **Cinema**: Cinema locations with coordinates, booking info
-- **Movie**: Movie details, posters, descriptions, TMDB integration
-- **MovieEvent**: Individual showtimes linking movies to cinemas
+- **Cinemas**: Cinema locations with coordinates, booking info
+- **Movies**: Movie details, posters, descriptions, TMDB integration
+- **MovieEvents**: Individual showtimes linking movies to cinemas
 
 ### Key Directories
-- `src/app/` - Next.js App Router pages and API routes
+- `src/app/` - Next.js App Router pages and components
 - `src/components/` - Reusable UI components (shadcn/ui)
-- `src/server/` - tRPC API setup and routers
-- `src/scripts/` - Data fetching and seeding scripts
-- `prisma/` - Database schema and migrations
-- `tests/` - Playwright E2E tests
+- `convex/` - Convex backend functions, schema, and cron jobs
+- `tests/` - Playwright E2E tests and Vitest unit tests
 
-### tRPC API Structure
-The API is organized into three main routers:
-- `cinemaRouter` - Cinema-related operations
-- `movieRouter` - Movie-related operations  
-- `movieEventRouter` - Showtime-related operations
+### Convex Functions Structure
+The Convex backend is organized into modules:
+- `convex/cinemas.ts` - Cinema queries and mutations
+- `convex/movies.ts` - Movie queries and mutations (including search)
+- `convex/movieEvents.ts` - Showtime queries and mutations
+- `convex/dashboard.ts` - Dashboard aggregation query
+- `convex/dataFetcher.ts` - Cinema City API data fetching
+- `convex/cron.ts` - Scheduled function configuration
+- `convex/lib/` - Utility functions (distance, movie deduplication, async batching)
 
 ### Data Flow
-1. Nightly cron job (`/api/cron/fetch-movies`) fetches Cinema City data
-2. Data is processed and stored in PostgreSQL via Prisma
-3. tRPC API serves data to Next.js frontend
-4. React components render movie/cinema information
+1. Nightly scheduled function (2 AM UTC) in `convex/cron.ts` triggers data fetch
+2. `convex/dataFetcher.ts` fetches Cinema City data and enriches with TMDB
+3. Data is stored in Convex database (serverless, real-time)
+4. React components use `useQuery` hooks to access Convex functions
+5. Server components use `fetchQuery` for server-side data fetching
 
 ### Environment Variables
 Required environment variables (see `src/env.js`):
-- `DATABASE_URL` - PostgreSQL connection string
-- `CRON_SECRET` - Secret for cron job authentication
-- `TMDB_API_KEY` - The Movie Database API key
-- `VERCEL_PROTECTION_BYPASS` - Vercel bypass token
+- `NEXT_PUBLIC_CONVEX_URL` - Convex deployment URL (client-side)
+- `TMDB_API_KEY` - The Movie Database API key (server-side)
+- `VERCEL_PROTECTION_BYPASS` - Vercel bypass token (server-side)
 
 ## Development Notes
 
-### Database Setup
-The project uses PostgreSQL with Prisma. Run `npm run db:generate` after schema changes and `npm run db:push` to apply changes to the database.
+### Convex Setup
+The project uses Convex for both database and backend functions. The schema is defined in `convex/schema.ts` with three main tables: `cinemas`, `movies`, and `movieEvents`.
+
+**Key Features**:
+- Native array support (no JSON stringification needed)
+- Real-time subscriptions via `useQuery` hooks
+- Serverless functions with built-in cron scheduling
+- Automatic TypeScript type generation
 
 ### Testing Strategy
-Playwright tests cover key user flows: landing page, movie details, search functionality. Tests are located in the `tests/` directory with page objects and selectors organized in subdirectories.
+Playwright tests cover key user flows: landing page, movie details, search functionality. Convex is mocked in tests using Vitest mocks defined in `tests/setup.ts`.
 
 ### Data Fetching
-The app fetches data from Cinema City Romania's API nightly. The fetching logic is in `src/scripts/fetchData.ts` and triggered via the cron API route.
+The app fetches data from Cinema City Romania's API nightly via a Convex scheduled function in `convex/dataFetcher.ts`. The function:
+- Fetches cinemas, movies, and showtimes from Cinema City API
+- Enriches movies with TMDB data (descriptions, popularity, posters)
+- Handles rate limiting with controlled concurrency
+- Runs automatically at 2 AM UTC
+
+### Database Schema
+Convex stores data with the following structure:
+- **externalId fields**: Store original Cinema City API IDs
+- **Convex _id fields**: Auto-generated Convex document IDs
+- **Relations**: Stored via external IDs (e.g., `filmExternalId`, `cinemaExternalId`)
+- **Arrays**: Native array types (attributeIds, attributes)
+- **Indexes**: Optimized for common query patterns
+
+### Migration from Prisma/tRPC
+The project was migrated from PostgreSQL/Prisma/tRPC to Convex. Key changes:
+- tRPC routers replaced with Convex query/mutation functions
+- `useQuery` hooks now from `convex/react` instead of `@trpc/react-query`
+- Server components use `fetchQuery` from `convex/nextjs`
+- Vercel cron replaced with Convex scheduled functions
+- PostgreSQL replaced with Convex's built-in database

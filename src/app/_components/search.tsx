@@ -1,5 +1,6 @@
 "use client";
-import { api } from "~/trpc/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
@@ -54,7 +55,8 @@ function MoviesSearchSkeleton() {
 }
 
 export default function SearchResults({ query }: { query: string }) {
-  const { data: results, isLoading } = api.movie.search.useQuery(query);
+  const results = useQuery(api.movies.searchMovies, { searchTerm: query });
+  const isLoading = results === undefined;
 
   if (isLoading) {
     return <MoviesSearchSkeleton />;
@@ -73,8 +75,8 @@ export default function SearchResults({ query }: { query: string }) {
 
       <div className="space-y-6">
         {results?.map((movie) => (
-          <div
-            key={movie.id}
+          <article
+            key={movie.externalId}
             className="bg-card flex flex-col gap-4 overflow-hidden rounded-lg shadow-sm sm:flex-row"
             data-testid="movie-search-card"
           >
@@ -92,7 +94,7 @@ export default function SearchResults({ query }: { query: string }) {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <h2 className="text-xl font-semibold">
                   <Link
-                    href={`/movies/${movie.id}`}
+                    href={`/movies/${movie.externalId}`}
                     className="hover:underline"
                   >
                     {movie.name}
@@ -118,11 +120,11 @@ export default function SearchResults({ query }: { query: string }) {
               </p>
               <div className="mt-4">
                 <Button asChild>
-                  <Link href={`/movies/${movie.id}`}>View Showtimes</Link>
+                  <Link href={`/movies/${movie.externalId}`}>View Showtimes</Link>
                 </Button>
               </div>
             </div>
-          </div>
+          </article>
         ))}
 
         {results?.length === 0 && (

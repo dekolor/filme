@@ -8,7 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { api } from "~/trpc/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import ShowtimeGrid from "./showtime-grid";
 import { useLocation } from "~/hooks/use-location";
 
@@ -21,15 +22,20 @@ export default function MovieShowtimes({ movieId, movieLink }: { movieId: string
   const [selectedCinema, setSelectedCinema] = useState<string>("");
   const { location } = useLocation();
 
-  const { data: cinemas } = api.cinema.getByMovieId.useQuery({
-    movieId,
-    userLat: location?.latitude ?? undefined,
-    userLon: location?.longitude ?? undefined,
-  });
+  const cinemas = useQuery(
+    api.cinemas.getCinemasByMovieId,
+    {
+      movieExternalId: movieId,
+      ...(location && {
+        userLat: location.latitude,
+        userLon: location.longitude,
+      }),
+    }
+  );
 
   useEffect(() => {
     if (selectedCinema === "" && cinemas) {
-      setSelectedCinema(cinemas?.[0]?.id.toString() ?? "");
+      setSelectedCinema(cinemas?.[0]?.externalId.toString() ?? "");
     }
   }, [selectedCinema, cinemas]);
 
@@ -43,7 +49,7 @@ export default function MovieShowtimes({ movieId, movieLink }: { movieId: string
             </SelectTrigger>
             <SelectContent>
               {cinemas?.map((cinema) => (
-                <SelectItem key={cinema.id} value={cinema.id.toString()}>
+                <SelectItem key={cinema.externalId} value={cinema.externalId.toString()}>
                   {cinema.displayName}
                   {hasDistance(cinema) && (
                     <span className="text-gray-500 ml-2">

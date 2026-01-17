@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { Cinema } from "@prisma/client";
 import { Button } from "~/components/ui/button";
-import { api } from "~/trpc/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { useLocation } from "~/hooks/use-location";
 import LocationPermissionToast from "./location-permission-dialog";
 import { LOCATION_CONFIG } from "~/lib/location-config";
@@ -41,8 +41,14 @@ function useDebouncedLocation(
   return debouncedLocation;
 }
 
+type CinemaData = {
+  externalId: number;
+  displayName: string;
+  imageUrl: string;
+};
+
 interface FeaturedCinemasProps {
-  cinemas?: Pick<Cinema, "id" | "displayName" | "imageUrl">[];
+  cinemas?: CinemaData[];
 }
 
 const SCROLL_AMOUNT = 320;
@@ -54,7 +60,7 @@ const PLACEHOLDER_IMAGE = "/noposter.png"; // Use existing placeholder instead o
 function CinemaCard({
   cinema,
 }: {
-  cinema: Pick<Cinema, "id" | "displayName" | "imageUrl"> & {
+  cinema: CinemaData & {
     distance?: number;
   };
 }) {
@@ -71,7 +77,7 @@ function CinemaCard({
 
   return (
     <Link
-      href={`/cinemas/${cinema.id}`}
+      href={`/cinemas/${cinema.externalId}`}
       className="group block"
       data-testid="featured-cinema"
     >
@@ -125,15 +131,15 @@ export default function FeaturedCinemas({
   );
 
   // Fetch cinemas with location-based sorting
-  const { data: locationSortedCinemas } = api.cinema.getAll.useQuery(
-    {
-      limit: 20,
-      userLat: debouncedLocation?.latitude,
-      userLon: debouncedLocation?.longitude,
-    },
-    {
-      enabled: isInitialized && !!debouncedLocation,
-    },
+  const locationSortedCinemas = useQuery(
+    api.cinemas.getAllCinemas,
+    isInitialized && !!debouncedLocation
+      ? {
+          limit: 20,
+          userLat: debouncedLocation.latitude,
+          userLon: debouncedLocation.longitude,
+        }
+      : "skip",
   );
 
   // Determine if we should show loading state
@@ -205,6 +211,7 @@ export default function FeaturedCinemas({
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
             className="h-8 w-8"
+            aria-label="Scroll cinemas left"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -214,6 +221,7 @@ export default function FeaturedCinemas({
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
             className="h-8 w-8"
+            aria-label="Scroll cinemas right"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -238,7 +246,7 @@ export default function FeaturedCinemas({
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {cinemas.map((cinema) => (
-            <div key={cinema.id} className="w-80 flex-shrink-0">
+            <div key={cinema.externalId} className="w-80 flex-shrink-0">
               <CinemaCard cinema={cinema} />
             </div>
           ))}
