@@ -48,8 +48,6 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "tests/global-setup.ts",
-    "tests/seed.ts"
+    "node_modules"
   ]
 }

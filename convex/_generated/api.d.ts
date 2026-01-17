@@ -18,6 +18,7 @@ import type * as lib_distance from "../lib/distance.js";
 import type * as lib_movieUtils from "../lib/movieUtils.js";
 import type * as movieEvents from "../movieEvents.js";
 import type * as movies from "../movies.js";
+import type * as testSeed from "../testSeed.js";
 import type * as triggerFetch from "../triggerFetch.js";
 
 import type {
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   "lib/movieUtils": typeof lib_movieUtils;
   movieEvents: typeof movieEvents;
   movies: typeof movies;
+  testSeed: typeof testSeed;
   triggerFetch: typeof triggerFetch;
 }>;
 

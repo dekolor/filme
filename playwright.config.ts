@@ -5,14 +5,23 @@ import { defineConfig, devices } from "@playwright/test";
  * https://github.com/motdotla/dotenv
  */
 import "dotenv/config";
+import { config } from "dotenv";
 
-const TEST_DB_URL = "postgresql://dekolor@localhost:5432/filme_test";
+// Load test-specific environment
+config({ path: ".env.test" });
+
+// Test deployment URL (falls back to dev if not set)
+const CONVEX_TEST_URL =
+  process.env.CONVEX_TEST_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: "./tests",
+  /* Only match .spec.ts files, ignore unit tests (run by Vitest) */
+  testMatch: "**/*.spec.ts",
+  testIgnore: "**/unit/**",
   /* Global setup to prepare test database */
   globalSetup: "./tests/global-setup.ts",
   /* Global teardown to restore production environment */
@@ -34,7 +43,7 @@ export default defineConfig({
     },
 
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:3000/",
+    baseURL: "http://localhost:3001/",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
   },
@@ -69,12 +78,13 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    command: "npm run dev -- --port 3001",
+    url: "http://localhost:3001",
+    reuseExistingServer: false,
     env: {
-      DATABASE_URL: TEST_DB_URL,
       SKIP_ENV_VALIDATION: "1",
+      // Use test deployment for the app during E2E tests
+      NEXT_PUBLIC_CONVEX_URL: CONVEX_TEST_URL!,
     },
   },
 });
