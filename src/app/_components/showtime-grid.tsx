@@ -5,16 +5,24 @@ import { Card, CardContent } from "~/components/ui/card";
 import { MapPin } from "lucide-react";
 import { Clock } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { MovieEvent, Cinema } from "@prisma/client";
-
-// Type for transformed data from tRPC (JSON strings parsed to arrays)
-type TransformedMovieEvent = Omit<MovieEvent, "attributes"> & {
-  attributes: string[];
-  Cinema: Cinema;
-};
-import { api } from "~/trpc/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { Skeleton } from "~/components/ui/skeleton";
 import { DateTime } from "luxon";
+
+type TransformedMovieEvent = {
+  externalId: string;
+  eventDateTime: string;
+  auditorium: string;
+  bookingLink: string;
+  businessDay: string;
+  attributes: string[];
+  Cinema: {
+    externalId: number;
+    displayName: string;
+    address: string;
+  } | null;
+};
 
 export default function ShowtimeGrid({
   movieId,
@@ -31,11 +39,11 @@ export default function ShowtimeGrid({
   );
   const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  const { data: events, isLoading } =
-    api.movieEvent.getByCinemaIdAndMovieId.useQuery({
-      cinemaId: Number(cinemaId),
-      movieId: movieId,
-    });
+  const events = useQuery(api.movieEvents.getEventsByCinemaAndMovie, {
+    cinemaExternalId: Number(cinemaId),
+    movieExternalId: movieId,
+  });
+  const isLoading = events === undefined;
 
   useEffect(() => {
     if (events) {
@@ -118,7 +126,7 @@ export default function ShowtimeGrid({
               {filteredShowtimes.map((showtime) => {
                 return (
                   <Card
-                    key={showtime.id}
+                    key={showtime.externalId}
                     className="border-gray-80 hover:bg-card overflow-hidden border bg-black transition-colors"
                   >
                     <CardContent className="p-4">

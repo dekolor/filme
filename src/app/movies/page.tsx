@@ -1,4 +1,5 @@
-import { api } from "~/trpc/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../convex/_generated/api";
 import MoviesInfiniteList from "~/app/_components/movies-infinite-list";
 
 export const metadata = {
@@ -9,7 +10,7 @@ export const metadata = {
 const MOVIES_PER_PAGE = 24;
 
 export default async function MoviesPage() {
-  const initialMovies = await api.movie.getAll({
+  const initialMovies = await fetchQuery(api.movies.getAllMovies, {
     orderByPopularity: "desc",
     limit: MOVIES_PER_PAGE,
     offset: 0,

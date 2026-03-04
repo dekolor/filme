@@ -6,6 +6,8 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  reactStrictMode: true,
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       { hostname: "*.cinemacity.ro" },
@@ -13,6 +15,19 @@ const config = {
       { hostname: "image.tmdb.org" },
     ],
     formats: ["image/webp", "image/avif"],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
+        ],
+      },
+    ];
   },
 };
 

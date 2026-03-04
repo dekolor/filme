@@ -8,12 +8,20 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Clock, Star, ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import type { Movie } from "@prisma/client";
 import { DateTime } from "luxon";
 import {
   MovieEmptyState,
   UpcomingMovieEmptyState,
 } from "~/components/empty-state";
+
+type Movie = {
+  externalId: string;
+  name: string;
+  posterLink: string;
+  releaseDate: string;
+  releaseYear?: string;
+  length: number;
+};
 
 interface FeaturedMoviesProps {
   movies: Movie[];
@@ -49,7 +57,7 @@ export default function FeaturedMovies({
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4">
               {movies.map((movie, index) => (
-                <MovieCard key={movie.id} movie={movie} priority={index < 4} />
+                <MovieCard key={movie.externalId} movie={movie} priority={index < 4} />
               ))}
             </div>
           )}
@@ -61,7 +69,7 @@ export default function FeaturedMovies({
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4">
               {upcomingMovies.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
+                <MovieCard key={movie.externalId} movie={movie} />
               ))}
             </div>
           )}
@@ -82,7 +90,7 @@ function MovieCard({
 
   return (
     <Card className="group overflow-hidden">
-      <Link href={`/movies/${movie.id}`}>
+      <Link href={`/movies/${movie.externalId}`}>
         <div className="relative aspect-[2/3] overflow-hidden">
           <Image
             src={imgSrc}

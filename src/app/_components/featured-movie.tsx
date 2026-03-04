@@ -1,10 +1,16 @@
 import Image from "next/image";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
-import type { Movie } from "@prisma/client";
+
+type Movie = {
+  externalId: string;
+  name: string;
+  posterLink: string;
+  description?: string;
+};
 
 interface FeaturedMovieProps {
-  movie: Movie | null;
+  movie: Movie | null | undefined;
 }
 
 export default function FeaturedMovie({
@@ -47,7 +53,7 @@ export default function FeaturedMovie({
           </h1>
           <p className="mb-4 text-white/90">{featuredMovie.description}</p>
           <Button asChild>
-            <Link href={`/movies/${featuredMovie.id}`}>View Showtimes</Link>
+            <Link href={`/movies/${featuredMovie.externalId}`}>View Showtimes</Link>
           </Button>
         </div>
       </div>

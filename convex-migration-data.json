@@ -1,0 +1,903 @@
+{
+  "cinemas": [
+    {
+      "externalId": 1,
+      "groupId": "1",
+      "displayName": "AFI Palace Cotroceni",
+      "link": "https://www.cinemacity.ro/cinemas/afi-palace-cotroceni",
+      "imageUrl": "https://www.cinemacity.ro/xmedia-cw/repo/feats/posters/1.jpg",
+      "address": "Bd. Vasile Milea 4, București 061344",
+      "bookingUrl": "https://www.cinemacity.ro/booking/1",
+      "blockOnlineSales": false,
+      "latitude": 44.43225,
+      "longitude": 26.05384
+    },
+    {
+      "externalId": 2,
+      "groupId": "2",
+      "displayName": "Sun Plaza",
+      "link": "https://www.cinemacity.ro/cinemas/sun-plaza",
+      "imageUrl": "https://www.cinemacity.ro/xmedia-cw/repo/feats/posters/2.jpg",
+      "address": "Calea Văcărești 391, București 040069",
+      "bookingUrl": "https://www.cinemacity.ro/booking/2",
+      "blockOnlineSales": false,
+      "latitude": 44.40345,
+      "longitude": 26.12456
+    },
+    {
+      "externalId": 3,
+      "groupId": "3",
+      "displayName": "ParkLake",
+      "link": "https://www.cinemacity.ro/cinemas/parklake",
+      "imageUrl": "https://www.cinemacity.ro/xmedia-cw/repo/feats/posters/3.jpg",
+      "address": "Liviu Rebreanu 4, București 031781",
+      "bookingUrl": "https://www.cinemacity.ro/booking/3",
+      "blockOnlineSales": false,
+      "latitude": 44.47123,
+      "longitude": 26.15234
+    }
+  ],
+  "movies": [
+    {
+      "externalId": "MOV1",
+      "name": "The Adventures of ChatGPT",
+      "length": 120,
+      "posterLink": "https://image.tmdb.org/t/p/w500/poster1.jpg",
+      "videoLink": "https://www.youtube.com/watch?v=trailer1",
+      "link": "https://www.cinemacity.ro/movies/chatgpt",
+      "weight": 100,
+      "releaseYear": "2024",
+      "releaseDate": "2026-01-02",
+      "attributeIds": [
+        "Action",
+        "Sci-Fi",
+        "Comedy"
+      ],
+      "imdbId": "tt1234567",
+      "description": "An AI assistant embarks on an epic journey to help humanity write better code and understand the universe.",
+      "tmdbPopularity": 95.5
+    },
+    {
+      "externalId": "MOV2",
+      "name": "Debugging Wars: Episode IX",
+      "length": 135,
+      "posterLink": "https://image.tmdb.org/t/p/w500/poster2.jpg",
+      "videoLink": "https://www.youtube.com/watch?v=trailer2",
+      "link": "https://www.cinemacity.ro/movies/debugging-wars",
+      "weight": 95,
+      "releaseYear": "2024",
+      "releaseDate": "2026-01-02",
+      "attributeIds": [
+        "Action",
+        "Drama",
+        "Thriller"
+      ],
+      "imdbId": "tt2345678",
+      "description": "The final battle between programmers and bugs in a galaxy far, far away from production.",
+      "tmdbPopularity": 88.2
+    },
+    {
+      "externalId": "MOV3",
+      "name": "The TypeScript Supremacy",
+      "length": 145,
+      "posterLink": "https://image.tmdb.org/t/p/w500/poster3.jpg",
+      "link": "https://www.cinemacity.ro/movies/typescript",
+      "weight": 90,
+      "releaseYear": "2024",
+      "releaseDate": "2026-01-02",
+      "attributeIds": [
+        "Action",
+        "Sci-Fi"
+      ],
+      "imdbId": "tt3456789",
+      "description": "When JavaScript rebels threaten to destroy the codebase, only TypeScript can restore order and type safety.",
+      "tmdbPopularity": 82.7
+    },
+    {
+      "externalId": "MOV4",
+      "name": "React: The New Generation",
+      "length": 110,
+      "posterLink": "https://image.tmdb.org/t/p/w500/poster4.jpg",
+      "videoLink": "https://www.youtube.com/watch?v=trailer4",
+      "link": "https://www.cinemacity.ro/movies/react-next-gen",
+      "weight": 85,
+      "releaseYear": "2024",
+      "releaseDate": "2026-01-02",
+      "attributeIds": [
+        "Drama",
+        "Family"
+      ],
+      "imdbId": "tt4567890",
+      "description": "A new generation of developers learns the ancient art of component composition and state management.",
+      "tmdbPopularity": 75.3
+    },
+    {
+      "externalId": "MOV5",
+      "name": "Upcoming: The Future of AI",
+      "length": 128,
+      "posterLink": "https://image.tmdb.org/t/p/w500/poster5.jpg",
+      "videoLink": "https://www.youtube.com/watch?v=trailer5",
+      "link": "https://www.cinemacity.ro/movies/future-ai",
+      "weight": 80,
+      "releaseYear": "2025",
+      "releaseDate": "2026-01-10",
+      "attributeIds": [
+        "Sci-Fi",
+        "Documentary"
+      ],
+      "imdbId": "tt5678901",
+      "description": "A glimpse into the future where AI and humans work together to solve the world's greatest challenges.",
+      "tmdbPopularity": 92.1
+    }
+  ],
+  "events": [
+    {
+      "externalId": "EVENT000001",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV1/1",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 2",
+      "auditoriumTinyName": "S2"
+    },
+    {
+      "externalId": "EVENT000002",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV1/2",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 3",
+      "auditoriumTinyName": "S3"
+    },
+    {
+      "externalId": "EVENT000003",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV1/3",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 4",
+      "auditoriumTinyName": "S4"
+    },
+    {
+      "externalId": "EVENT000004",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV1/4",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 5",
+      "auditoriumTinyName": "S5"
+    },
+    {
+      "externalId": "EVENT000005",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV2/5",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 6",
+      "auditoriumTinyName": "S6"
+    },
+    {
+      "externalId": "EVENT000006",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV2/6",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 7",
+      "auditoriumTinyName": "S7"
+    },
+    {
+      "externalId": "EVENT000007",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV2/7",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 8",
+      "auditoriumTinyName": "S8"
+    },
+    {
+      "externalId": "EVENT000008",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV2/8",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 9",
+      "auditoriumTinyName": "S9"
+    },
+    {
+      "externalId": "EVENT000009",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV3/9",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 10",
+      "auditoriumTinyName": "S10"
+    },
+    {
+      "externalId": "EVENT000010",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV3/10",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 1",
+      "auditoriumTinyName": "S1"
+    },
+    {
+      "externalId": "EVENT000011",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV3/11",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 2",
+      "auditoriumTinyName": "S2"
+    },
+    {
+      "externalId": "EVENT000012",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV3/12",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 3",
+      "auditoriumTinyName": "S3"
+    },
+    {
+      "externalId": "EVENT000013",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV4/13",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 4",
+      "auditoriumTinyName": "S4"
+    },
+    {
+      "externalId": "EVENT000014",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV4/14",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 5",
+      "auditoriumTinyName": "S5"
+    },
+    {
+      "externalId": "EVENT000015",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV4/15",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 6",
+      "auditoriumTinyName": "S6"
+    },
+    {
+      "externalId": "EVENT000016",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 1,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/1/MOV4/16",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 7",
+      "auditoriumTinyName": "S7"
+    },
+    {
+      "externalId": "EVENT000017",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV1/17",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 8",
+      "auditoriumTinyName": "S8"
+    },
+    {
+      "externalId": "EVENT000018",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV1/18",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 9",
+      "auditoriumTinyName": "S9"
+    },
+    {
+      "externalId": "EVENT000019",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV1/19",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 10",
+      "auditoriumTinyName": "S10"
+    },
+    {
+      "externalId": "EVENT000020",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV1/20",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 1",
+      "auditoriumTinyName": "S1"
+    },
+    {
+      "externalId": "EVENT000021",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV2/21",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 2",
+      "auditoriumTinyName": "S2"
+    },
+    {
+      "externalId": "EVENT000022",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV2/22",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 3",
+      "auditoriumTinyName": "S3"
+    },
+    {
+      "externalId": "EVENT000023",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV2/23",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 4",
+      "auditoriumTinyName": "S4"
+    },
+    {
+      "externalId": "EVENT000024",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV2/24",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 5",
+      "auditoriumTinyName": "S5"
+    },
+    {
+      "externalId": "EVENT000025",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV3/25",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 6",
+      "auditoriumTinyName": "S6"
+    },
+    {
+      "externalId": "EVENT000026",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV3/26",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 7",
+      "auditoriumTinyName": "S7"
+    },
+    {
+      "externalId": "EVENT000027",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV3/27",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 8",
+      "auditoriumTinyName": "S8"
+    },
+    {
+      "externalId": "EVENT000028",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV3/28",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 9",
+      "auditoriumTinyName": "S9"
+    },
+    {
+      "externalId": "EVENT000029",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV4/29",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 10",
+      "auditoriumTinyName": "S10"
+    },
+    {
+      "externalId": "EVENT000030",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV4/30",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 1",
+      "auditoriumTinyName": "S1"
+    },
+    {
+      "externalId": "EVENT000031",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV4/31",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 2",
+      "auditoriumTinyName": "S2"
+    },
+    {
+      "externalId": "EVENT000032",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 2,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/2/MOV4/32",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 3",
+      "auditoriumTinyName": "S3"
+    },
+    {
+      "externalId": "EVENT000033",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV1/33",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 4",
+      "auditoriumTinyName": "S4"
+    },
+    {
+      "externalId": "EVENT000034",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV1/34",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 5",
+      "auditoriumTinyName": "S5"
+    },
+    {
+      "externalId": "EVENT000035",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV1/35",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 6",
+      "auditoriumTinyName": "S6"
+    },
+    {
+      "externalId": "EVENT000036",
+      "filmExternalId": "MOV1",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV1/36",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 7",
+      "auditoriumTinyName": "S7"
+    },
+    {
+      "externalId": "EVENT000037",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV2/37",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 8",
+      "auditoriumTinyName": "S8"
+    },
+    {
+      "externalId": "EVENT000038",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV2/38",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 9",
+      "auditoriumTinyName": "S9"
+    },
+    {
+      "externalId": "EVENT000039",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV2/39",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 10",
+      "auditoriumTinyName": "S10"
+    },
+    {
+      "externalId": "EVENT000040",
+      "filmExternalId": "MOV2",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV2/40",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 1",
+      "auditoriumTinyName": "S1"
+    },
+    {
+      "externalId": "EVENT000041",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV3/41",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 2",
+      "auditoriumTinyName": "S2"
+    },
+    {
+      "externalId": "EVENT000042",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV3/42",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 3",
+      "auditoriumTinyName": "S3"
+    },
+    {
+      "externalId": "EVENT000043",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV3/43",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 4",
+      "auditoriumTinyName": "S4"
+    },
+    {
+      "externalId": "EVENT000044",
+      "filmExternalId": "MOV3",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV3/44",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 5",
+      "auditoriumTinyName": "S5"
+    },
+    {
+      "externalId": "EVENT000045",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T10:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV4/45",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 6",
+      "auditoriumTinyName": "S6"
+    },
+    {
+      "externalId": "EVENT000046",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T15:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV4/46",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 7",
+      "auditoriumTinyName": "S7"
+    },
+    {
+      "externalId": "EVENT000047",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-03",
+      "eventDateTime": "2026-01-03T20:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV4/47",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 8",
+      "auditoriumTinyName": "S8"
+    },
+    {
+      "externalId": "EVENT000048",
+      "filmExternalId": "MOV4",
+      "cinemaExternalId": 3,
+      "businessDay": "2026-01-04",
+      "eventDateTime": "2026-01-04T18:00:00",
+      "attributes": [
+        "2D",
+        "DUB"
+      ],
+      "bookingLink": "https://www.cinemacity.ro/booking/3/MOV4/48",
+      "presentationCode": "2D",
+      "soldOut": false,
+      "auditorium": "Sala 9",
+      "auditoriumTinyName": "S9"
+    }
+  ]
+}

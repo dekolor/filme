@@ -3,7 +3,8 @@
 import { Calendar, Clock } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import Image from "next/image";
-import { api } from "~/trpc/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 import { DateTime } from "luxon";
 import { useState, useEffect } from "react";
@@ -14,7 +15,9 @@ import LocationPermissionToast from "./location-permission-dialog";
 import { useLocation } from "~/hooks/use-location";
 
 export default function Movie({ movieId }: { movieId: string }) {
-  const { data: movie, isLoading } = api.movie.getById.useQuery(movieId);
+  // Fetch movie data from Convex
+  const movie = useQuery(api.movies.getMovieById, { externalId: movieId });
+  const isLoading = movie === undefined;
   const [imgSrc, setImgSrc] = useState("/noposter.png");
   const { requestLocation } = useLocation();
 

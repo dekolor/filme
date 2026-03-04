@@ -6,20 +6,27 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import Link from "next/link";
-import { api } from "~/trpc/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { Movie, MovieEvent } from "@prisma/client";
-
-// Types for transformed data from tRPC (JSON strings parsed to arrays)
-type TransformedMovie = Omit<Movie, "attributeIds"> & {
-  attributeIds: string[];
-};
-type TransformedMovieEvent = Omit<MovieEvent, "attributes"> & {
-  attributes: string[];
-};
 import { DateTime } from "luxon";
 import { Skeleton } from "~/components/ui/skeleton";
+
+type TransformedMovie = {
+  externalId: string;
+  name: string;
+  posterLink: string;
+  attributeIds: string[];
+};
+
+type TransformedMovieEvent = {
+  externalId: string;
+  eventDateTime: string;
+  auditorium: string;
+  attributes: string[];
+  Movie: TransformedMovie;
+};
 
 function groupShowtimes(showtimes: TransformedMovieEvent[]) {
   return {
@@ -106,27 +113,34 @@ export function CinemaDetailsSkeleton() {
 }
 
 export default function Cinema({ cinemaId }: { cinemaId: string }) {
-  const { data: cinema, isLoading } = api.cinema.getById.useQuery(cinemaId);
+  const cinema = useQuery(api.cinemas.getCinemaById, {
+    externalId: parseInt(cinemaId),
+  });
+  const isLoading = cinema === undefined;
   const [movies, setMovies] = useState<TransformedMovie[]>([]);
 
   const [grouped, setGrouped] = useState<
     Record<string, TransformedMovieEvent[]>
   >({});
 
-  const { data: movieEvents } = api.movieEvent.getByCinemaIdToday.useQuery({
-    cinemaId: parseInt(cinemaId),
+  const movieEvents = useQuery(api.movieEvents.getEventsByCinemaToday, {
+    cinemaExternalId: parseInt(cinemaId),
   });
 
   useEffect(() => {
     if (movieEvents) {
+      const eventsWithMovies = movieEvents.filter(
+        (event): event is typeof event & { Movie: NonNullable<typeof event.Movie> } =>
+          event.Movie !== null
+      );
       const uniqueMovies = Array.from(
         new Map(
-          movieEvents.map((event) => [event.Movie.id, event.Movie]),
+          eventsWithMovies.map((event) => [event.Movie.externalId, event.Movie]),
         ).values(),
       );
       setMovies(uniqueMovies);
 
-      const grouped = groupShowtimes(movieEvents);
+      const grouped = groupShowtimes(eventsWithMovies);
       setGrouped(grouped);
     }
   }, [movieEvents]);
@@ -139,22 +153,24 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
     return <CinemaDetailsSkeleton />;
   }
 
-  const cinemaData = cinema!;
+  if (!cinema) {
+    notFound();
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="mb-10">
         <div className="relative mb-6 h-[220px] overflow-hidden rounded-2xl shadow-lg md:h-[340px]">
           <Image
-            src={cinemaData.imageUrl || "/placeholder.svg"}
-            alt={cinemaData.displayName}
+            src={cinema.imageUrl || "/placeholder.svg"}
+            alt={cinema.displayName}
             fill
             className="object-cover"
             priority
           />
           <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6">
             <h1 className="text-3xl font-bold text-white drop-shadow-lg md:text-4xl">
-              {cinemaData.displayName}
+              {cinema.displayName}
             </h1>
           </div>
         </div>
@@ -164,29 +180,29 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
             <div className="flex items-start gap-2">
               <MapPin className="text-primary mt-0.5 h-5 w-5" />
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cinemaData.address)}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cinema.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
               >
-                {cinemaData.address}
+                {cinema.address}
               </a>
             </div>
             <div className="flex items-start gap-2">
               <MapPin className="text-primary mt-0.5 h-5 w-5" />
               <span className="text-muted-foreground">
-                {cinemaData.latitude} — {cinemaData.longitude}
+                {cinema.latitude} — {cinema.longitude}
               </span>
             </div>
             <div className="flex items-start gap-2">
               <ExternalLink className="text-primary mt-0.5 h-5 w-5" />
               <a
-                href={cinemaData.link}
+                href={cinema.link}
                 className="break-all hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {cinemaData.link}
+                {cinema.link}
               </a>
             </div>
           </div>
@@ -209,7 +225,7 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
           {movies.length > 0 ? (
             movies.map((movie) => (
               <Card
-                key={movie.id}
+                key={movie.externalId}
                 className="overflow-hidden rounded-2xl bg-zinc-900 shadow-2xl"
               >
                 <CardContent className="p-0">
@@ -229,7 +245,7 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
                     <div className="flex flex-1 flex-col p-4">
                       <div className="mb-4 flex items-start justify-between">
                         <Link
-                          href={`/movies/${movie.id}`}
+                          href={`/movies/${movie.externalId}`}
                           className="text-2xl leading-tight font-bold text-white hover:underline"
                         >
                           {movie.name}

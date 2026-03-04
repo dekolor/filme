@@ -2,7 +2,7 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
-import { TRPCReactProvider } from "~/trpc/react";
+import { ConvexClientProvider } from "./ConvexClientProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import NavigationProgress from "~/components/navigation-progress";
 import Navbar from "~/app/_components/navbar";
@@ -25,10 +25,10 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} dark`}>
       <body>
         <NavigationProgress />
-        <TRPCReactProvider>
+        <ConvexClientProvider>
           <Navbar />
           {children}
-        </TRPCReactProvider>
+        </ConvexClientProvider>
         <SpeedInsights />
       </body>
     </html>

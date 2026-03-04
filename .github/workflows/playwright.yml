@@ -9,10 +9,10 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
-      CRON_SECRET: test-secret
       VERCEL_PROTECTION_BYPASS: test-bypass
       TMDB_API_KEY: test-tmdb-key
       SKIP_ENV_VALIDATION: "1"
+      NEXT_PUBLIC_CONVEX_URL: ${{ secrets.CONVEX_TEST_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,8 +22,6 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-      - name: Setup test database
-        run: npm run test:setup
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v4
