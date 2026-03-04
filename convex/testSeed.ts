@@ -15,6 +15,9 @@ import { mutation } from "./_generated/server";
 export const clearTestData = mutation({
   args: {},
   handler: async (ctx) => {
+    if (process.env.ALLOW_TEST_SEEDING !== "true") {
+      throw new Error("Test seeding is disabled in this environment");
+    }
     // Test data identifiers
     const testMovieIds = ["MOV1", "MOV2", "MOV3", "MOV4", "MOV5"];
     const testCinemaIds = [1, 2, 3];
@@ -74,6 +77,9 @@ export const clearTestData = mutation({
 export const seedTestData = mutation({
   args: {},
   handler: async (ctx) => {
+    if (process.env.ALLOW_TEST_SEEDING !== "true") {
+      throw new Error("Test seeding is disabled in this environment");
+    }
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
