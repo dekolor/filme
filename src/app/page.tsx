@@ -7,7 +7,6 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "../../convex/_generated/api";
 import { ErrorBoundary } from "~/components/error-boundary";
 import { unstable_cache } from "next/cache";
-import { cookies } from "next/headers";
 
 const getCachedDashboardData = unstable_cache(
   async () => fetchQuery(api.dashboard.getDashboardData, {}),
@@ -15,45 +14,9 @@ const getCachedDashboardData = unstable_cache(
   { revalidate: 60 },
 );
 
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 10) / 10;
-}
-
-function getUserLocation(cookieStore: Awaited<ReturnType<typeof cookies>>) {
-  const locationCookie = cookieStore.get("user_location");
-  if (!locationCookie) return null;
-  try {
-    const parsed = JSON.parse(decodeURIComponent(locationCookie.value)) as { latitude: number; longitude: number };
-    if (typeof parsed.latitude === "number" && typeof parsed.longitude === "number") {
-      return parsed;
-    }
-  } catch { /* ignore */ }
-  return null;
-}
-
 export default async function Home() {
   try {
-    const [dashboardData, cookieStore] = await Promise.all([
-      getCachedDashboardData(),
-      cookies(),
-    ]);
-
-    const userLocation = getUserLocation(cookieStore);
-    const sortedCinemas = userLocation
-      ? dashboardData.cinemas
-          .map((c) => ({
-            ...c,
-            distance: calculateDistance(userLocation.latitude, userLocation.longitude, c.latitude, c.longitude),
-          }))
-          .sort((a, b) => a.distance - b.distance)
-      : dashboardData.cinemas;
+    const dashboardData = await getCachedDashboardData();
 
     return (
       <>
@@ -71,7 +34,7 @@ export default async function Home() {
             </ErrorBoundary>
 
             <ErrorBoundary>
-              <FeaturedCinemas cinemas={sortedCinemas} />
+              <FeaturedCinemas cinemas={dashboardData.cinemas} />
             </ErrorBoundary>
           </main>
 
