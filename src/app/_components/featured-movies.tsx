@@ -105,9 +105,7 @@ function MovieCard({
           />
           <div className="absolute top-2 left-2">
             <Badge variant="secondary">
-              {DateTime.fromISO(movie.releaseDate).toLocaleString(
-                DateTime.DATE_MED,
-              )}
+              {DateTime.fromISO(movie.releaseDate).toFormat("d MMM yyyy")}
             </Badge>
           </div>
           {movie.releaseYear && (

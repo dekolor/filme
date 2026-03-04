@@ -80,6 +80,8 @@ export const getDashboardData = query({
         externalId: c.externalId,
         displayName: c.displayName,
         imageUrl: c.imageUrl,
+        latitude: c.latitude,
+        longitude: c.longitude,
       }));
 
     return {

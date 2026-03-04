@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { notFound } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { DateTime } from "luxon";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -117,32 +117,27 @@ export default function Cinema({ cinemaId }: { cinemaId: string }) {
     externalId: parseInt(cinemaId),
   });
   const isLoading = cinema === undefined;
-  const [movies, setMovies] = useState<TransformedMovie[]>([]);
-
-  const [grouped, setGrouped] = useState<
-    Record<string, TransformedMovieEvent[]>
-  >({});
 
   const movieEvents = useQuery(api.movieEvents.getEventsByCinemaToday, {
     cinemaExternalId: parseInt(cinemaId),
   });
 
-  useEffect(() => {
-    if (movieEvents) {
-      const eventsWithMovies = movieEvents.filter(
-        (event): event is typeof event & { Movie: NonNullable<typeof event.Movie> } =>
-          event.Movie !== null
-      );
-      const uniqueMovies = Array.from(
-        new Map(
-          eventsWithMovies.map((event) => [event.Movie.externalId, event.Movie]),
-        ).values(),
-      );
-      setMovies(uniqueMovies);
+  const { movies, grouped } = useMemo(() => {
+    if (!movieEvents) return { movies: [] as TransformedMovie[], grouped: {} as Record<string, TransformedMovieEvent[]> };
 
-      const grouped = groupShowtimes(eventsWithMovies);
-      setGrouped(grouped);
-    }
+    const eventsWithMovies = movieEvents.filter(
+      (event): event is typeof event & { Movie: NonNullable<typeof event.Movie> } =>
+        event.Movie !== null
+    );
+    const uniqueMovies = Array.from(
+      new Map(
+        eventsWithMovies.map((event) => [event.Movie.externalId, event.Movie]),
+      ).values(),
+    );
+    return {
+      movies: uniqueMovies,
+      grouped: groupShowtimes(eventsWithMovies),
+    };
   }, [movieEvents]);
 
   if (!isLoading && !cinema) {
