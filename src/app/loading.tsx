@@ -1,9 +1,9 @@
-import { 
-  MovieCardSkeleton, 
-  CinemaCardSkeleton, 
-  FeaturedMovieSkeleton, 
-  HeaderSkeleton, 
-  SectionHeaderSkeleton 
+import {
+  MovieCardSkeleton,
+  CinemaCardSkeleton,
+  FeaturedMovieSkeleton,
+  HeaderSkeleton,
+  SectionHeaderSkeleton
 } from "~/components/ui/skeletons";
 
 export default function Loading() {

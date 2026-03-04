@@ -56,6 +56,10 @@ export function useLocation(): UseLocationReturn {
         const validatedLocation = LocationSchema.parse(parsed);
         setLocation(validatedLocation);
         setHasLocationPermission(true);
+        // Sync to cookie so the server can sort cinemas before rendering
+        if (!document.cookie.includes("user_location=")) {
+          document.cookie = `user_location=${encodeURIComponent(JSON.stringify({ latitude: validatedLocation.latitude, longitude: validatedLocation.longitude }))};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+        }
       } catch (e) {
         console.warn("Invalid location data in localStorage, removing:", e);
         localStorage.removeItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION);
@@ -207,6 +211,8 @@ export function useLocation(): UseLocationReturn {
       setLocation(newLocation);
       setHasLocationPermission(true);
       localStorage.setItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION, JSON.stringify(newLocation));
+      // Also save to cookie so the server can sort cinemas before rendering
+      document.cookie = `user_location=${encodeURIComponent(JSON.stringify({ latitude: newLocation.latitude, longitude: newLocation.longitude }))};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to get location";
       setError(errorMessage);
@@ -226,6 +232,7 @@ export function useLocation(): UseLocationReturn {
     setError(null);
     localStorage.removeItem(LOCATION_CONFIG.STORAGE_KEYS.USER_LOCATION);
     localStorage.removeItem(LOCATION_CONFIG.STORAGE_KEYS.PERMISSION_ASKED);
+    document.cookie = "user_location=;path=/;max-age=0";
   }, []);
 
   return {

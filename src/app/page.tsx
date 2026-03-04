@@ -6,13 +6,33 @@ import FeaturedMovie from "./_components/featured-movie";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "../../convex/_generated/api";
 import { ErrorBoundary } from "~/components/error-boundary";
+import { unstable_cache } from "next/cache";
 
-// Enable ISR - revalidate every 60 seconds
-export const revalidate = 60;
+const getCachedDashboardData = unstable_cache(
+  async () => {
+    const data = await fetchQuery(api.dashboard.getDashboardData, {});
+    // Throw on empty to prevent caching startup/warmup misses
+    if (data.movies.length === 0 && data.cinemas.length === 0) {
+      throw new Error("EMPTY_DASHBOARD");
+    }
+    return data;
+  },
+  ["dashboard-data"],
+  { revalidate: 60 },
+);
+
+async function getDashboardData() {
+  try {
+    return await getCachedDashboardData();
+  } catch {
+    // Cache miss or empty data — fetch directly
+    return await fetchQuery(api.dashboard.getDashboardData, {});
+  }
+}
 
 export default async function Home() {
   try {
-    const dashboardData = await fetchQuery(api.dashboard.getDashboardData, {});
+    const dashboardData = await getDashboardData();
 
     return (
       <>
