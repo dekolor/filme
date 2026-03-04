@@ -100,9 +100,7 @@ export default function Movie({ movieId }: { movieId: string }) {
             </div>
             <div data-testid="movie-release-date" className="flex items-center">
               <Calendar className="mr-1 h-4 w-4" />
-              {DateTime.fromISO(movie!.releaseDate).toLocaleString(
-                DateTime.DATE_MED,
-              )}
+              {DateTime.fromISO(movie!.releaseDate).toFormat("d MMM yyyy")}
             </div>
           </div>
 
