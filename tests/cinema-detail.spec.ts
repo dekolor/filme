@@ -48,16 +48,7 @@ test("Today tab is active by default", async ({ page }) => {
 test("shows showtime time text for seeded events", async ({ page }) => {
   // The seed creates events at 10:00, 15:00, 20:00.
   // The cinema component renders times like "d MMM, HH:mm" via DateTime.fromISO().toFormat().
-  // We look for the time patterns 10:00, 15:00, or 20:00 anywhere on the page.
-  const timePatterns = ["10:00", "15:00", "20:00"];
-  let found = false;
-  for (const time of timePatterns) {
-    const matches = page.getByText(time, { exact: false });
-    const count = await matches.count();
-    if (count > 0) {
-      found = true;
-      break;
-    }
-  }
-  expect(found, "At least one seeded showtime (10:00, 15:00, or 20:00) should be visible").toBe(true);
+  // Wait for at least one showtime to appear (data loads async via useQuery + useEffect).
+  const showtimeLocator = page.getByText(/(?:10|15|20):00/);
+  await expect(showtimeLocator.first()).toBeVisible({ timeout: 10000 });
 });
