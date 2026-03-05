@@ -11,6 +11,7 @@ import {
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import ShowtimeGrid from "./showtime-grid";
+import { Skeleton } from "~/components/ui/skeleton";
 import { useLocation } from "~/hooks/use-location";
 
 // Type guard to check if cinema has distance property
@@ -39,6 +40,15 @@ export default function MovieShowtimes({ movieId, movieLink }: { movieId: string
     }
   }, [selectedCinema, cinemas]);
 
+  if (!cinemas) {
+    return (
+      <div data-testid="movie-showtimes" className="w-full space-y-6">
+        <Skeleton className="h-10 w-full sm:w-64 rounded" />
+        <Skeleton className="h-32 w-full rounded" />
+      </div>
+    );
+  }
+
   return (
     <div data-testid="movie-showtimes" className="w-full space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row">
@@ -48,7 +58,7 @@ export default function MovieShowtimes({ movieId, movieLink }: { movieId: string
               <SelectValue placeholder="Select Cinema" />
             </SelectTrigger>
             <SelectContent>
-              {cinemas?.map((cinema) => (
+              {cinemas.map((cinema) => (
                 <SelectItem key={cinema.externalId} value={cinema.externalId.toString()}>
                   {cinema.displayName}
                   {hasDistance(cinema) && (

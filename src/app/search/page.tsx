@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Search } from "lucide-react";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../convex/_generated/api";
 import SearchResults from "~/app/_components/search";
 
 export default async function SearchPage({
@@ -10,6 +12,9 @@ export default async function SearchPage({
   searchParams: Promise<{ query?: string }>;
 }) {
   const { query } = await searchParams;
+  const initialResults = query
+    ? await fetchQuery(api.movies.searchMovies, { searchTerm: query })
+    : [];
 
   return (
     <div className="bg-background min-h-screen">
@@ -41,7 +46,7 @@ export default async function SearchPage({
         </div>
       </header>
 
-      <SearchResults query={query!} />
+      <SearchResults query={query ?? ""} initialResults={initialResults} />
     </div>
   );
 }
