@@ -6,6 +6,7 @@
 
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { DateTime } from "luxon";
 import { sortCinemasByDistance } from "./lib/distance";
 
 // Schema for cinema creation
@@ -102,13 +103,16 @@ export const getCinemasByMovieId = query({
     userLon: v.optional(v.float64()),
   },
   handler: async (ctx, { movieExternalId, userLat, userLon }) => {
-    // Find all events for this movie
-    const events = await ctx.db
+    const today = DateTime.now().toFormat("yyyy-MM-dd");
+
+    // Find current/future events for this movie
+    const allEvents = await ctx.db
       .query("movieEvents")
       .withIndex("by_filmExternalId", (q) =>
         q.eq("filmExternalId", movieExternalId),
       )
       .collect();
+    const events = allEvents.filter((e) => e.businessDay >= today);
 
     // Get unique cinema external IDs
     const cinemaExternalIds = [
