@@ -1,6 +1,8 @@
 # MovieTime 🎬
 
-[Live Demo](https://filme.dekolor.ro)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/dekolor/filme/actions/workflows/playwright.yml/badge.svg)](https://github.com/dekolor/filme/actions/workflows/playwright.yml)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://filme.dekolor.ro)
 
 A modern web app for discovering movies and showtimes at all Cinema City locations across Romania. Designed for fast, real-world usage with automatic nightly data updates and end-to-end testing.
 
