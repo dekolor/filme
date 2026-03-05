@@ -1,4 +1,5 @@
 import { fetchQuery } from "convex/nextjs";
+import { unstable_cache } from "next/cache";
 import { api } from "../../../convex/_generated/api";
 import MoviesInfiniteList from "~/app/_components/movies-infinite-list";
 
@@ -9,12 +10,19 @@ export const metadata = {
 
 const MOVIES_PER_PAGE = 24;
 
+const getCachedMovies = unstable_cache(
+  async () =>
+    fetchQuery(api.movies.getAllMovies, {
+      orderByPopularity: "desc",
+      limit: MOVIES_PER_PAGE,
+      offset: 0,
+    }),
+  ["movies-list"],
+  { revalidate: 60 },
+);
+
 export default async function MoviesPage() {
-  const initialMovies = await fetchQuery(api.movies.getAllMovies, {
-    orderByPopularity: "desc",
-    limit: MOVIES_PER_PAGE,
-    offset: 0,
-  });
+  const initialMovies = await getCachedMovies();
 
   return (
     <div className="container mx-auto px-4 py-8">

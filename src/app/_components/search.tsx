@@ -54,8 +54,11 @@ function MoviesSearchSkeleton() {
   );
 }
 
-export default function SearchResults({ query }: { query: string }) {
-  const results = useQuery(api.movies.searchMovies, { searchTerm: query });
+type SearchResult = NonNullable<ReturnType<typeof useQuery<typeof api.movies.searchMovies>>>;
+
+export default function SearchResults({ query, initialResults }: { query: string; initialResults?: SearchResult }) {
+  const liveResults = useQuery(api.movies.searchMovies, { searchTerm: query });
+  const results = liveResults ?? initialResults;
   const isLoading = results === undefined;
 
   if (isLoading) {

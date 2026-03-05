@@ -8,6 +8,8 @@ import { api } from "../../../convex/_generated/api";
 
 import { DateTime } from "luxon";
 import { useState, useEffect } from "react";
+import { notFound } from "next/navigation";
+import type { Doc } from "../../../convex/_generated/dataModel";
 
 import MovieShowtimes from "./movie-showtimes";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -48,8 +50,9 @@ export function MovieDetailsSkeleton() {
   );
 }
 
-export default function Movie({ movieId }: { movieId: string }) {
-  const movie = useQuery(api.movies.getMovieById, { externalId: movieId });
+export default function Movie({ movieId, initialData }: { movieId: string; initialData?: Doc<"movies"> | null }) {
+  const liveMovie = useQuery(api.movies.getMovieById, { externalId: movieId });
+  const movie = liveMovie ?? initialData;
   const isLoading = movie === undefined;
   const [imgSrc, setImgSrc] = useState("/noposter.png");
   const { requestLocation } = useLocation();
@@ -62,6 +65,10 @@ export default function Movie({ movieId }: { movieId: string }) {
 
   if (isLoading) {
     return <MovieDetailsSkeleton />;
+  }
+
+  if (!movie) {
+    notFound();
   }
 
   return (
@@ -88,7 +95,7 @@ export default function Movie({ movieId }: { movieId: string }) {
             <h1 data-testid="movie-title" className="text-3xl font-bold">{movie?.name}</h1>
             <div data-testid="movie-release-date-badge" className="flex items-center gap-2">
               <Badge variant="outline">
-                {DateTime.fromISO(movie!.releaseDate).toFormat("d MMM yyyy")}
+                {DateTime.fromISO(movie.releaseDate).toFormat("d MMM yyyy")}
               </Badge>
             </div>
           </div>
@@ -100,7 +107,7 @@ export default function Movie({ movieId }: { movieId: string }) {
             </div>
             <div data-testid="movie-release-date" className="flex items-center">
               <Calendar className="mr-1 h-4 w-4" />
-              {DateTime.fromISO(movie!.releaseDate).toFormat("d MMM yyyy")}
+              {DateTime.fromISO(movie.releaseDate).toFormat("d MMM yyyy")}
             </div>
           </div>
 

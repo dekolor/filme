@@ -112,15 +112,26 @@ export function CinemaDetailsSkeleton() {
   );
 }
 
-export default function Cinema({ cinemaId }: { cinemaId: string }) {
-  const cinema = useQuery(api.cinemas.getCinemaById, {
+type CinemaInitialData = NonNullable<ReturnType<typeof useQuery<typeof api.cinemas.getCinemaById>>>;
+type EventsInitialData = NonNullable<ReturnType<typeof useQuery<typeof api.movieEvents.getEventsByCinemaToday>>>;
+
+type CinemaProps = {
+  cinemaId: string;
+  initialCinema?: CinemaInitialData | null;
+  initialEvents?: EventsInitialData | null;
+};
+
+export default function Cinema({ cinemaId, initialCinema, initialEvents }: CinemaProps) {
+  const liveCinema = useQuery(api.cinemas.getCinemaById, {
     externalId: parseInt(cinemaId),
   });
+  const cinema = liveCinema ?? initialCinema;
   const isLoading = cinema === undefined;
 
-  const movieEvents = useQuery(api.movieEvents.getEventsByCinemaToday, {
+  const liveEvents = useQuery(api.movieEvents.getEventsByCinemaToday, {
     cinemaExternalId: parseInt(cinemaId),
   });
+  const movieEvents = liveEvents ?? initialEvents;
 
   const { movies, grouped } = useMemo(() => {
     if (!movieEvents) return { movies: [] as TransformedMovie[], grouped: {} as Record<string, TransformedMovieEvent[]> };
