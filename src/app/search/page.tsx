@@ -46,7 +46,7 @@ export default async function SearchPage({
         </div>
       </header>
 
-      <SearchResults query={query!} initialResults={initialResults} />
+      <SearchResults query={query ?? ""} initialResults={initialResults} />
     </div>
   );
 }
