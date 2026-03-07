@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -19,11 +19,23 @@ function hasDistance(cinema: unknown): cinema is { distance: number } {
   return typeof cinema === 'object' && cinema !== null && 'distance' in cinema && typeof (cinema as Record<string, unknown>).distance === 'number';
 }
 
-export default function MovieShowtimes({ movieId, movieLink }: { movieId: string; movieLink?: string }) {
-  const [selectedCinema, setSelectedCinema] = useState<string>("");
+type CinemasResult = NonNullable<ReturnType<typeof useQuery<typeof api.cinemas.getCinemasByMovieId>>>;
+type ShowtimesResult = NonNullable<ReturnType<typeof useQuery<typeof api.movieEvents.getEventsByCinemaAndMovie>>>;
+
+export type MovieShowtimesInitialData = {
+  initialCinemas?: CinemasResult | null;
+  initialShowtimes?: ShowtimesResult | null;
+};
+
+type MovieShowtimesProps = {
+  movieId: string;
+  movieLink?: string;
+} & MovieShowtimesInitialData;
+
+export default function MovieShowtimes({ movieId, movieLink, initialCinemas, initialShowtimes }: MovieShowtimesProps) {
   const { location } = useLocation();
 
-  const cinemas = useQuery(
+  const liveCinemas = useQuery(
     api.cinemas.getCinemasByMovieId,
     {
       movieExternalId: movieId,
@@ -33,12 +45,21 @@ export default function MovieShowtimes({ movieId, movieLink }: { movieId: string
       }),
     }
   );
+  const cinemas = liveCinemas ?? initialCinemas;
 
-  useEffect(() => {
-    if (selectedCinema === "" && cinemas) {
-      setSelectedCinema(cinemas?.[0]?.externalId.toString() ?? "");
-    }
-  }, [selectedCinema, cinemas]);
+  // Initialize selectedCinema from initialCinemas to avoid empty first render
+  const [selectedCinema, setSelectedCinema] = useState<string>(
+    () => initialCinemas?.[0]?.externalId.toString() ?? ""
+  );
+
+  // When live cinemas arrive and nothing is selected, pick the first one
+  if (selectedCinema === "" && cinemas && cinemas.length > 0) {
+    setSelectedCinema(cinemas[0]!.externalId.toString());
+  }
+
+  // Only use initialShowtimes if the selected cinema matches the first cinema
+  const firstCinemaId = initialCinemas?.[0]?.externalId.toString();
+  const showtimesInitial = selectedCinema === firstCinemaId ? initialShowtimes : undefined;
 
   if (!cinemas) {
     return (
@@ -73,7 +94,12 @@ export default function MovieShowtimes({ movieId, movieLink }: { movieId: string
         </div>
       </div>
 
-      <ShowtimeGrid movieId={movieId} cinemaId={selectedCinema} movieLink={movieLink} />
+      <ShowtimeGrid
+        movieId={movieId}
+        cinemaId={selectedCinema}
+        movieLink={movieLink}
+        initialShowtimes={showtimesInitial}
+      />
     </div>
   );
 }

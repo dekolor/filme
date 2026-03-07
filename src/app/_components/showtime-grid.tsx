@@ -4,7 +4,7 @@ import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 import { MapPin } from "lucide-react";
 import { Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -24,45 +24,41 @@ type TransformedMovieEvent = {
   } | null;
 };
 
+type ShowtimeGridProps = {
+  movieId: string;
+  cinemaId: string;
+  movieLink?: string;
+  initialShowtimes?: TransformedMovieEvent[] | null;
+};
+
 export default function ShowtimeGrid({
   movieId,
   cinemaId,
   movieLink,
-}: {
-  movieId: string;
-  cinemaId: string;
-  movieLink?: string;
-}) {
+  initialShowtimes,
+}: ShowtimeGridProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [showtimes, setShowtimes] = useState<TransformedMovieEvent[] | null>(
-    null,
-  );
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  const events = useQuery(api.movieEvents.getEventsByCinemaAndMovie, {
+  const liveEvents = useQuery(api.movieEvents.getEventsByCinemaAndMovie, {
     cinemaExternalId: Number(cinemaId),
     movieExternalId: movieId,
   });
+  const events = liveEvents ?? initialShowtimes;
   const isLoading = events === undefined;
 
-  useEffect(() => {
-    if (events) {
-      setShowtimes(events);
-      setAvailableDates(
-        [...new Set(events.map((event) => event.businessDay))].sort(),
-      );
-    }
-  }, [events]);
+  const showtimes = events ?? null;
+  const availableDates = events
+    ? [...new Set(events.map((event) => event.businessDay))].sort()
+    : [];
 
-  useEffect(() => {
-    if (selectedDate === "") {
-      setSelectedDate(availableDates[0] ?? "");
-    }
-  }, [selectedDate, availableDates]);
+  // Use selectedDate if it's valid, otherwise default to first available date
+  const activeDate = selectedDate && availableDates.includes(selectedDate)
+    ? selectedDate
+    : availableDates[0] ?? "";
 
-  // Filter showtimes by selected date
+  // Filter showtimes by active date
   const filteredShowtimes =
-    showtimes?.filter((showtime) => showtime.businessDay === selectedDate) ??
+    showtimes?.filter((showtime) => showtime.businessDay === activeDate) ??
     [];
 
   return (
@@ -81,13 +77,13 @@ export default function ShowtimeGrid({
           if (date === today) {
             displayText = "Today";
             customClasses =
-              selectedDate === date
+              activeDate === date
                 ? "border-yellow-500 bg-yellow-500 text-black hover:bg-yellow-600"
                 : "border-yellow-500 text-yellow-500 hover:bg-yellow-500/10";
           } else if (date === tomorrow) {
             displayText = "Tomorrow";
             customClasses =
-              selectedDate === date
+              activeDate === date
                 ? "border-purple-500 bg-purple-500 text-white hover:bg-purple-600"
                 : "border-purple-500 text-purple-500 hover:bg-purple-500/10";
           }
@@ -95,7 +91,7 @@ export default function ShowtimeGrid({
           return (
             <Button
               key={date}
-              variant={selectedDate === date ? "default" : "outline"}
+              variant={activeDate === date ? "default" : "outline"}
               onClick={() => setSelectedDate(date)}
               className={`flex items-center gap-2 ${customClasses}`}
             >

@@ -16,31 +16,17 @@ test.describe('404 / not-found pages', () => {
   test('navigating to a non-existent movie shows not-found state', async ({ page }) => {
     await page.goto('/movies/NONEXISTENT999');
 
-    // The page must not be blank — wait for either:
-    //   (a) the custom 404 heading from not-found.tsx, or
-    //   (b) the movie loading skeleton or an empty movie detail shell.
-    // In all cases the <body> should have meaningful content.
-    await expect(page.locator('body')).not.toBeEmpty();
+    // The client component calls notFound() after useQuery confirms the movie doesn't exist.
+    // Wait for either the 404 page or verify the page isn't blank.
+    await expect(
+      page.getByRole('heading', { name: '404 - Page Not Found' })
+    ).toBeVisible({ timeout: 10000 });
 
-    // Check that we see EITHER the Next.js 404 page text OR the movie page shell.
-    // The not-found boundary renders "404 - Page Not Found".
-    // We allow some time for the client-side query to settle.
-    const notFoundHeading = page.getByRole('heading', { name: '404 - Page Not Found' });
-    const notFoundCount = await notFoundHeading.count();
+    await expect(
+      page.getByText('The page you are looking for might have been removed', { exact: false })
+    ).toBeVisible();
 
-    if (notFoundCount > 0) {
-      // Full 404 page is shown — verify the standard copy and return-home link
-      await expect(notFoundHeading).toBeVisible();
-      await expect(
-        page.getByText('The page you are looking for might have been removed', { exact: false })
-      ).toBeVisible();
-      await expect(page.getByRole('link', { name: 'Return to Home' })).toBeVisible();
-    } else {
-      // The route matched /movies/[id] but the movie was not found.
-      // The component might still show its skeleton or an empty shell.
-      // Assert that the page at minimum has a <main> element (not a blank screen).
-      await expect(page.locator('main')).toBeVisible();
-    }
+    await expect(page.getByRole('link', { name: 'Return to Home' })).toBeVisible();
   });
 
   test('navigating to a non-existent cinema shows not-found state', async ({ page }) => {
