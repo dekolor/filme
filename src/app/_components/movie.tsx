@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import type { Doc } from "../../../convex/_generated/dataModel";
 
-import MovieShowtimes from "./movie-showtimes";
+import MovieShowtimes, { type MovieShowtimesInitialData } from "./movie-showtimes";
 import { Skeleton } from "~/components/ui/skeleton";
 import LocationPermissionToast from "./location-permission-dialog";
 import { useLocation } from "~/hooks/use-location";
@@ -50,7 +50,14 @@ export function MovieDetailsSkeleton() {
   );
 }
 
-export default function Movie({ movieId, initialData }: { movieId: string; initialData?: Doc<"movies"> | null }) {
+type MovieProps = {
+  movieId: string;
+  initialData?: Doc<"movies"> | null;
+  initialCinemas?: MovieShowtimesInitialData["initialCinemas"];
+  initialShowtimes?: MovieShowtimesInitialData["initialShowtimes"];
+};
+
+export default function Movie({ movieId, initialData, initialCinemas, initialShowtimes }: MovieProps) {
   const liveMovie = useQuery(api.movies.getMovieById, { externalId: movieId });
   const movie = liveMovie ?? initialData;
   const isLoading = movie === undefined;
@@ -126,7 +133,12 @@ export default function Movie({ movieId, initialData }: { movieId: string; initi
 
           <h2 className="mb-6 text-2xl font-bold">Showtimes</h2>
 
-          <MovieShowtimes movieId={movieId} movieLink={movie?.link} />
+          <MovieShowtimes
+            movieId={movieId}
+            movieLink={movie?.link}
+            initialCinemas={initialCinemas}
+            initialShowtimes={initialShowtimes}
+          />
         </div>
       </div>
 
